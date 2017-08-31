@@ -1,0 +1,217 @@
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+//				Nothing to change in this script
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+echo "NQV-Routines"
+//Script Stage Selection
+ifgoto ScriptStage="Startup" Startup
+ifgoto ScriptStage="Initialise" Initialise
+ifgoto ScriptStage="Builds" BuildGoals
+
+/////////////////
+label Startup
+/////////////////
+resetgoals
+StartTime = date()
+echo "Set Map Colours"
+if !city.timeSlot dummy = MapColors.splice(0,15,15463184,16734553,6476898,57343,16759296,11570178,16770207,15658734,14144981,8026747,262144,10723306,131327,197260,16777215)
+BuildScheduled = "No"
+
+echo "Determine City Number"
+TC=1
+MyCities = [cities[0].cityManager.id] 
+label CitySlotNC
+if m_context.cities.length>=TC+1 returnVal = MyCities.push(cities[TC].cityManager.id) 
+TC=TC+1
+ifgoto TC<m_context.cities.length CitySlotNC
+MyCities = MyCities.sort(16)
+i=0
+label nextTown
+CityID =  MyCities[i]
+ifgoto city.id = CityID FoundCity
+i=i+1
+ifgoto i<m_context.cities.length nextTown
+label FoundCity
+ThisCity = i + 1
+echo "This city is " + ThisCity + " of " + m_context.cities.length
+return
+
+/////////////////
+label Initialise
+/////////////////
+echo "Initialising Script"
+EnableTrainer="No"
+RenameHeroesActive = "No"
+bldstg="Init"
+command "listallheroes"
+if $result.replace(/"([^"]+).+/g,"$1").split("\n").splice(1).indexOf(H[0]) > -1 EnableTrainer="Yes"
+CityName = m_context.Player.playerInfo.userName.substr(0,8)	
+if city.countBuilding(4, 10, 10)=1 if city.countBuilding(5, 10, 10)=1 if city.countBuilding(6, 10, 10)=1 if city.countBuilding(7, 10, 10)=37 CityName="L10"+m_context.Player.playerInfo.userName.substr(0,5)
+if city.name.substr(1,3)="L10" CityName="L10"+m_context.Player.playerInfo.userName.substr(0,5)
+if city.name.substr(2,3)="L10" CityName="L10"+m_context.Player.playerInfo.userName.substr(0,5)
+BuildEmbassy = "Yes" 
+if BuildAddEmbassy = "No" if ThisCity!=1 BuildEmbassy = "No" 
+gosub CityBuild
+gosub AccountState
+ANLoop=0
+L10Techs="No"
+AlertNeighboursCountPrev=0
+NewCityBuildInProgress="No"
+LvlHero=H[2]
+if player.playerInfo.alliance!=null AlertAllianceMembers="No"
+if AlertEmail = "Yes" call "NQV-Alerts.txt"
+gosub ChoosePols
+return
+
+label CityBuild
+citytype = CityTypes[(ThisCity-1)]
+if ConvAllL10As!="normal" if city.name.substr(2,3)="L10" citytype=ConvAllL10As
+echo "This will be a " + citytype + " city."
+if citytype="food" CB =   ["ag",6,15,5,16,"iron",5,"farm","saw","quarry","iron","f","s","q","i",7,4,5,6,"lu","mas","mi"]
+if citytype="lumber" CB = ["lu",6,15,5,16,"iron",5,"saw","farm","quarry","iron","s","f","q","i",4,7,5,6,"ag","mas","mi"]
+if citytype="stone" CB =  ["mas",11,10,9,12,"iron",9,"quarry","farm","saw","iron","q","f","s","i",5,7,4,6,"ag","lu","mi"]
+if citytype="iron" CB =   ["mi",14,7,11,10,"iron",11,"iron","farm","saw","quarry","i","f","s","q",6,7,4,5,"ag","lu","mas"]
+echo CB
+echo "Updating City Build Values to include your Warehouses & Embassies"
+UpdateCB=CB.splice(2,1,CB[2]-WarehouseQty)
+UpdateCB=CB.splice(4,1,CB[4]-WarehouseQty)
+if BuildEmbassy = "No" UpdateCB=CB.splice(2,1,CB[2]+1)
+if BuildEmbassy = "No" UpdateCB=CB.splice(4,1,CB[4]+1)
+echo CB
+return
+
+label AccountState
+command "loc " + city.coords
+AccntState = Upper1($result.match(/\)\s([^,]+)/)[1])
+if AccntState=null echo "Having trouble getting your AccountState, trying again."
+if AccntState=null sleep 30
+if AccntState=null loop 2 AccountState
+if AccntState=null echo "There is an issue with getting account status, setting to Peace for now, this could cause some unexpected results in goals.  Restart bot when possible" 
+if AccntState=null if date() - player.playerInfo.createrTime > 691200000 AccntState="Peace"
+if AccntState=null if date() - player.playerInfo.createrTime < 691200000 AccntState="Beginner"
+echo "Account Status:" + AccntState
+return
+
+/////////////////
+label BuildGoals
+/////////////////
+echo "Update Goals and Settings"
+label Refresh
+LS=date().getTime()
+resetgoals
+if ThisCity="1" if m_context.Player.playerInfo.titleId>=4 completequests routine
+if ThisCity="1" if m_context.Player.playerInfo.titleId<1 completequests routine
+if ThisCity="1" if AcceptQuests = "Yes" completequests routine
+RenameHeroesActive = "No"
+LevelHeroesInitialised = "No"
+gosub CityBuild
+if RenameHeroes = "Yes" if date().getHours()>=HeroRenameHour if date().getHours()<=HeroRenameHour+2 gosub RenameHeroesRecallHeroes
+EnableTrainer="No"
+command "listallheroes"
+if $result.replace(/"([^"]+).+/g,"$1").split("\n").splice(1).indexOf(H[0]) > -1 EnableTrainer="Yes"
+if $result.replace(/"([^"]+).+/g,"$1").split("\n").splice(1).indexOf(H[0]) > -1 echo "Trainer found in account"
+gosub AccountState
+echo round((date() - StartTime)/60000,2) + " minute's gone"
+call "NQV-Settings.txt"
+gosub ChoosePols
+if FindField(city.x, city.y, LevelTrainerL10Range, 12,10).length=0 LevelTrainerL10="No"
+if city.getAvailableTroop().archer<185000 LevelTrainerL10="No"
+if city.getBuildingLevel(29)<10 LevelTrainerL10="No"
+if city.researches[9].level=10 if city.researches[11].level=10 if city.researches[12].level=10 if city.researches[14].level=10 if city.researches[16].level=10 L10Techs="Yes"
+if L10Techs!="Yes" LevelTrainerL10="No"
+if (city.getAvailableTroop().ballista<2300) echo "Hero Levelling in this city has been disabled due to lack of farm teams"
+if (city.getAvailableTroop().ballista<2300) LevelHeroesEnable = "No"
+if AccntState="Peace" if LevelHeroesEnable = "Yes" call "NQV-LevelHeroes.txt"
+if city.countBuilding(1,1)+city.countBuilding(2,1)+city.countBuilding(3,1)<21 call "NQV-AddBuilds.txt"
+call "NQV-Goals.txt"
+call "NQV-Items.txt"
+ifgosub AccntMaint = "Yes" AccntMaint
+if city.name!=LeftPad(ThisCity,2,0)+CityName execute "renamecity "+LeftPad(ThisCity,2,0)+CityName
+if ThisCity="1" if m_context.ItemCount("player.box.gambling.3")>=SpinAmulets if SpinAmulets>0 gosub SpinAmulets
+if Alliance!="Alliance" if player.playerInfo.alliance!=Alliance gosub ChangeAlliance
+if EnableAcceptLords = "Yes" if player.playerInfo.allianceLevel!="Member" if player.playerInfo.alliance=Alliance gosub AcceptLords
+if EnablePurchaseItemQuest = "Yes" if player.playerInfo.medal>=5 if ThisCity=1 gosub PurchaseItemQuest
+if RenameHeroesActive = "Yes" call "NQV-RenameHeroes.txt"
+config nomayor:0,wartown:0
+if NEATO="Yes" call "NQV-UpdateNEATO.txt"
+if NewCityBuildInProgress!="Yes" if NewCityAutoBuild = "Yes" if m_context.Player.playerInfo.titleId-m_context.cities.length>=NewCitySlotsToKeep if city.getAvailableTroop().archer>50 call "NQV-AutoCityBuild.txt"
+if city.name = BuildCityFrom if BuildScheduled = "No" gosub BuildCity
+label Loop
+if LS+LoopTime*60*1000<date().getTime() return
+call "NQV-Loop.txt"
+loop Loop
+
+// Subroutines //
+label RenameHeroesRecallHeroes
+RenameHeroesActive = "Yes"
+echo "Recalling armies and setting wartown to update hero names"
+config wartown:1
+if ThisCity=1 config wartown:2
+RenameHeroesActive = "Yes" 
+rhhid=0
+label RenameHeroesRecallHero
+if city.heroes[rhhid].status>1 if city.heroes[rhhid].status<5 execute "recallhero "+city.heroes[rhhid].name
+if rhhid>=city.heroes.length-1 return
+rhhid=rhhid+1
+goto RenameHeroesRecallHero
+
+label BuildCity
+echo "Build New City"
+execute "buildcity " + NewCityCoords
+BuildScheduled = "Yes"
+return
+
+label ChoosePols
+echo "Choose Politics Heroes"
+Pol1=H[1]
+Pol2=H[2]
+if m_city.IsHeroInCastle(H[1])=false return
+if m_city.IsHeroInCastle(H[2])=false return
+if city.findHeroByName(H[1]).management>city.findHeroByName(H[2]).management Pol2 = H[2]
+if city.findHeroByName(H[2]).management>city.findHeroByName(H[1]).management Pol2 = H[1]
+if (city.findHeroByName(H[1]).level+city.findHeroByName(H[1]).remainPoint)*(city.findHeroByName(H[1]).level+city.findHeroByName(H[1]).remainPoint)*(city.findHeroByName(H[1]).level+city.findHeroByName(H[1]).remainPoint)*100/3+city.findHeroByName(H[1]).experience>=(city.findHeroByName(H[1]).level+LevelHeroPts)*(city.findHeroByName(H[1]).level+LevelHeroPts)*(city.findHeroByName(H[1]).level+LevelHeroPts)*100/3 if (city.findHeroByName(H[1]).level+city.findHeroByName(H[1]).remainPoint)*(city.findHeroByName(H[1]).level+city.findHeroByName(H[1]).remainPoint)*(city.findHeroByName(H[1]).level+city.findHeroByName(H[1]).remainPoint)*100/3+city.findHeroByName(H[1]).experience>(city.findHeroByName(H[2]).level+city.findHeroByName(H[2]).remainPoint)*(city.findHeroByName(H[2]).level+city.findHeroByName(H[2]).remainPoint)*(city.findHeroByName(H[2]).level+city.findHeroByName(H[2]).remainPoint)*100/3+city.findHeroByName(H[2]).experience Pol2 = H[2]
+if (city.findHeroByName(H[2]).level+city.findHeroByName(H[2]).remainPoint)*(city.findHeroByName(H[2]).level+city.findHeroByName(H[2]).remainPoint)*(city.findHeroByName(H[2]).level+city.findHeroByName(H[2]).remainPoint)*100/3+city.findHeroByName(H[2]).experience>=(city.findHeroByName(H[2]).level+LevelHeroPts)*(city.findHeroByName(H[2]).level+LevelHeroPts)*(city.findHeroByName(H[2]).level+LevelHeroPts)*100/3 if (city.findHeroByName(H[1]).level+city.findHeroByName(H[1]).remainPoint)*(city.findHeroByName(H[1]).level+city.findHeroByName(H[1]).remainPoint)*(city.findHeroByName(H[1]).level+city.findHeroByName(H[1]).remainPoint)*100/3+city.findHeroByName(H[1]).experience<(city.findHeroByName(H[2]).level+city.findHeroByName(H[2]).remainPoint)*(city.findHeroByName(H[2]).level+city.findHeroByName(H[2]).remainPoint)*(city.findHeroByName(H[2]).level+city.findHeroByName(H[2]).remainPoint)*100/3+city.findHeroByName(H[2]).experience Pol2 = H[1]
+if Pol2=H[2] Pol1=H[1]
+if Pol2=H[1] Pol1=H[2]
+echo "City Mayor will be "+Pol1+", "+Pol2+" will be levelled up."
+return
+
+label ChangeAlliance
+if player.playerInfo.alliance!=null if player.playerInfo.allianceLevel!="Member" command "resign"
+if player.playerInfo.alliance!=null if player.playerInfo.alliance!=Alliance command "quitalliance"
+if player.playerInfo.alliance!=Alliance command "apply " + Alliance
+return
+
+label AcceptLords
+echo "Accept nominated Lords into the Alliance"
+ac=0
+label AcceptNextLord
+echo "Accepted Lord " + AcceptLords[ac]
+command "accept " + AcceptLords[ac]
+ac=ac+1
+if  AcceptLords[ac]!=null goto AcceptNextLord
+echo "All Lords Accepted"
+return
+
+label PurchaseItemQuest
+if player.playerInfo.medal>=5 buyitem amulet
+completequests routine
+if player.playerInfo.medal>=5 buyitem amulet
+if player.playerInfo.medal>=5 repeat
+if m_context.ItemCount("player.box.gambling.3")>=1 useitem amulet
+if m_context.ItemCount("player.box.gambling.3")>=1 repeat
+return
+
+label SpinAmulets
+if SpinAmulets<1 return
+amuletqty=m_context.ItemCount("player.box.gambling.3")
+useitem amulet
+execute "repeat "+amuletqty
+return
+
+label AccntMaint
+echo "Reading System Mails"
+command "listsystemmail 0"
+command "listsystemmail 1"
+command "listsystemmail 2"
+command "listsystemmail 3"
+return

@@ -1,0 +1,74 @@
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+//				Nothing to change in this script
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+echo "Update NEATO"
+ifgosub ThisCity="1" NEATOAccountStats
+gosub NEATOCityStats
+return
+
+label NEATOAccountStats
+echo "Updating Account Stats"
+asid=Config.server+player.playerInfo.userName
+herostats = "0"
+trastat = "0"
+trabase = "0"
+command "listallheroes"
+ifgoto $result.replace(/"([^"]+).+/g,"$1").split("\n").splice(1).indexOf(H[0]) <= -1 SkipTrainer
+herostats = $result.split(H[0])[1].split("\n")[0].split('","')
+trastat = herostats[4]*1
+trabase = (herostats[4]*1)-(herostats[1]*1)
+label SkipTrainer
+url = "http://" + NEATOServer + ":82/AccountStats.php"
+params = {action:"save", asid:asid, server:Config.server, lordname:player.playerInfo.userName, pres:player.playerInfo.prestige, title:["Civilian","Knight","Baronet","Baron","Viscount","Earl","Marquis","Duke","Furstin","Prinzessin"][m_context.Player.playerInfo.titleId], rank:player.playerInfo.office, cities:m_context.cities.length, cents:player.playerInfo.medal, amulets:m_context.ItemCount("player.box.gambling.3"), scripts:m_context.ItemCount("consume.blueprint.1"), rports:m_context.ItemCount("consume.move.1"), aports:m_context.ItemCount("player.more.castle.1.a"), wports:m_context.ItemCount("player.more.castle.1.c"), basguide:m_context.ItemCount("consume.2.a"), priguide:m_context.ItemCount("consume.2.b"), intguide:m_context.ItemCount("consume.2.b.1"), senguide:m_context.ItemCount("consume.2.c"), masguide:m_context.ItemCount("consume.2.c.1"), ultguide:m_context.ItemCount("consume.2.d"), stonecutter:m_context.ItemCount("player.speedup.1"), holywater:m_context.ItemCount("hero.reset.1"), excal:m_context.ItemCount("hero.power.1"), anabis:m_context.ItemCount("player.experience.1.a"), epitome:m_context.ItemCount("player.experience.1.b"), onwar:m_context.ItemCount("player.experience.1.c"), cross:m_context.ItemCount("hero.loyalty.1"), rose:m_context.ItemCount("hero.loyalty.2"), lion:m_context.ItemCount("hero.loyalty.3"), honor:m_context.ItemCount("hero.loyalty.4"), courage:m_context.ItemCount("hero.loyalty.5"), wisdom:m_context.ItemCount("hero.loyalty.6"), freedom:m_context.ItemCount("hero.loyalty.7"), justice:m_context.ItemCount("hero.loyalty.8"), nation:m_context.ItemCount("hero.loyalty.9"), trastat:trastat, trabase:trabase, rsrchag:city.researches[1].level, rsrchlu:city.researches[2].level, rsrchmas:city.researches[3].level, rsrchmi:city.researches[4].level, rsrchmet:city.researches[5].level, rsrchin:city.researches[7].level, rsrchms:city.researches[8].level, rsrchmt:city.researches[9].level, rsrchir:city.researches[10].level, rsrchlo:city.researches[11].level, rsrchcom:city.researches[12].level, rsrchho:city.researches[13].level, rsrchar:city.researches[14].level, rsrchst:city.researches[15].level, rsrchmed:city.researches[16].level, rsrchcon:city.researches[17].level, rsrchen:city.researches[18].level, rsrchmac:city.researches[19].level, rsrchpr:city.researches[20].level, brokengates:m_context.ItemCount("player.box.present.money.77"), lostwastes:m_context.ItemCount("player.box.present.money.75"), poisonfeast:m_context.ItemCount("player.box.present.money.76"), fleetfeet:m_context.ItemCount("player.box.present.money.70"), endurimmort:m_context.ItemCount("player.box.present.money.71"), alchemamp:m_context.ItemCount("player.box.present.money.72"), christcastle:m_context.ItemCount("player.haunted.castle"), hauntcastle:m_context.ItemCount("player.halloween.castle"), leaftree:m_context.ItemCount("player.leafofthetree"), chocbunny:m_context.ItemCount("player.chocolate.bunny"), holyhelm:m_context.ItemCount("player.box.hero.d"), platehelm:m_context.ItemCount("player.box.hero.c"), truce:m_context.ItemCount("player.peace.1"), wealthnations:m_context.ItemCount("hero.management.1"), vesta:m_context.ItemCount("player.reduce.troops.upkeep.1"), silverkey:m_context.ItemCount("player.key.silver"), crystalofattunement:m_context.ItemCount("player.box.hero.e"), sigilofrecruitment:m_context.ItemCount("player.box.hero.f"), speechtext:m_context.ItemCount("player.heart.1.a"), alliance:player.playerInfo.alliance, playercreatetime:player.playerInfo.createrTime, truced:m_context.truced, lastlogin:player.currentTime, position:player.playerInfo.allianceLevel , flag:player.playerInfo.flag, agendtime:city.researches[1].endTime, luendtime:city.researches[2].endTime, masendtime:city.researches[3].endTime, miendtime:city.researches[4].endTime, metendtime:city.researches[5].endTime, inendtime:city.researches[7].endTime, msendtime:city.researches[8].endTime, mtendtime:city.researches[9].endTime, irendtime:city.researches[10].endTime, logendtime:city.researches[11].endTime, comendtime:city.researches[12].endTime, hoendtime:city.researches[13].endTime, arendtime:city.researches[14].endTime, spendtime:city.researches[15].endTime, medendtime:city.researches[16].endTime, conendtime:city.researches[17].endTime, engendtime:city.researches[18].endTime, macendtime:city.researches[19].endTime, prendtime:city.researches[20].endTime, agupgradeing:city.researches[1].upgradeing, luupgradeing:city.researches[2].upgradeing, masupgradeing:city.researches[3].upgradeing, miupgradeing:city.researches[4].upgradeing, metupgradeing:city.researches[5].upgradeing, inupgradeing:city.researches[7].upgradeing, msupgradeing:city.researches[8].upgradeing, mtupgradeing:city.researches[9].upgradeing, irupgradeing:city.researches[10].upgradeing, logupgradeing:city.researches[11].upgradeing, comupgradeing:city.researches[12].upgradeing, houpgradeing:city.researches[13].upgradeing, arupgradeing:city.researches[14].upgradeing, spupgradeing:city.researches[15].upgradeing, medupgradeing:city.researches[16].upgradeing, conupgradeing:city.researches[17].upgradeing, engupgradeing:city.researches[18].upgradeing, macupgradeing:city.researches[19].upgradeing, prupgradeing:city.researches[20].upgradeing, agstarttime:city.researches[1].startTime, lustarttime:city.researches[2].startTime, masstarttime:city.researches[3].startTime, mistarttime:city.researches[4].startTime, metstarttime:city.researches[5].startTime, instarttime:city.researches[7].startTime, msstarttime:city.researches[8].startTime, mtstarttime:city.researches[9].startTime, irstarttime:city.researches[10].startTime, logstarttime:city.researches[11].startTime, comstarttime:city.researches[12].startTime, hostarttime:city.researches[13].startTime, arstarttime:city.researches[14].startTime, spstarttime:city.researches[15].startTime, medstarttime:city.researches[16].startTime, constarttime:city.researches[17].startTime, engstarttime:city.researches[18].startTime, macstarttime:city.researches[19].startTime, prstarttime:city.researches[20].startTime, agtypeid:city.researches[1].typeId, lutypeid:city.researches[2].typeId, mastypeid:city.researches[3].typeId, mitypeid:city.researches[4].typeId, mettypeid:city.researches[5].typeId, intypeid:city.researches[7].typeId, mstypeid:city.researches[8].typeId, mttypeid:city.researches[9].typeId, irtypeid:city.researches[10].typeId, logtypeid:city.researches[11].typeId, comtypeid:city.researches[12].typeId, hotypeid:city.researches[13].typeId, artypeid:city.researches[14].typeId, sptypeid:city.researches[15].typeId, medtypeid:city.researches[16].typeId, contypeid:city.researches[17].typeId, engtypeid:city.researches[18].typeId, mactypeid:city.researches[19].typeId, prtypeid:city.researches[20].typeId, agpermition:city.researches[1].permition, lupermition:city.researches[2].permition, maspermition:city.researches[3].permition, mipermition:city.researches[4].permition, metpermition:city.researches[5].permition, inpermition:city.researches[7].permition, mspermition:city.researches[8].permition, mtpermition:city.researches[9].permition, irpermition:city.researches[10].permition, logpermition:city.researches[11].permition, compermition:city.researches[12].permition, hopermition:city.researches[13].permition, arpermition:city.researches[14].permition, sppermition:city.researches[15].permition, medpermition:city.researches[16].permition, conpermition:city.researches[17].permition, engpermition:city.researches[18].permition, macpermition:city.researches[19].permition, prpermition:city.researches[20].permition, inboxuser:player.newMaileCount_inbox, reportsarmy:player.newReportCount_army, loginemail:player.playerInfo.accountName} 
+get url params
+echo $result
+return
+
+label NEATOCityStats
+echo "Updating City Stats"
+csid=Config.server+player.playerInfo.userName+LeftPad(ThisCity,2,0)
+heroesqty = city.heroes.length
+Poli1=[0,0,0,0]
+Poli2=[0,0,0,0]
+Int=[0,0]
+Att=[0,0]
+if m_city.IsHeroInCastle(H[0]) heroesqty = city.heroes.length - 1
+if m_city.IsHeroInCastle(H[1]) Poli1=[round(city.findHeroByName(H[1]).management+(city.findHeroByName(H[1]).management*city.findHeroByName(H[1]).managementBuffAdded/100)),round(city.findHeroByName(H[1]).base),round(city.findHeroByName(H[1]).remainPoint),round(city.findHeroByName(H[1]).experience)]
+if m_city.IsHeroInCastle(H[2]) Poli2=[round(city.findHeroByName(H[2]).management+(city.findHeroByName(H[2]).management*city.findHeroByName(H[2]).managementBuffAdded/100)),round(city.findHeroByName(H[2]).base),round(city.findHeroByName(H[2]).remainPoint),round(city.findHeroByName(H[2]).experience)]
+if m_city.IsHeroInCastle(H[3]) Int=[round(city.findHeroByName(H[3]).stratagem+(city.findHeroByName(H[3]).stratagem*city.findHeroByName(H[3]).stratagemBuffAdded/100)),round(city.findHeroByName(H[3]).base)]
+if m_city.IsHeroInCastle(H[5]) Att=[round(city.findHeroByName(H[5]).power+(city.findHeroByName(H[5]).power*city.findHeroByName(H[5]).powerBuffAdded/100)),round(city.findHeroByName(H[5]).base)]
+Valley0=[0,"",0]
+Valley1=[0,"",0]
+Valley2=[0,"",0]
+Valley3=[0,"",0]
+Valley4=[0,"",0]
+Valley5=[0,"",0]
+Valley6=[0,"",0]
+Valley7=[0,"",0]
+Valley8=[0,"",0]
+Valley9=[0,"",0]
+if city.fields.length>0 Valley0=[city.fields[0].level,city.fields[0].name,city.fields[0].type]
+ifgoto city.fields.length=1 CityStatsEndValleys
+if city.fields.length>1 Valley1=[city.fields[1].level,city.fields[1].name,city.fields[1].type]
+ifgoto city.fields.length=2 CityStatsEndValleys
+if city.fields.length>2 Valley2=[city.fields[2].level,city.fields[2].name,city.fields[2].type]
+ifgoto city.fields.length=3 CityStatsEndValleys
+if city.fields.length>3 Valley3=[city.fields[3].level,city.fields[3].name,city.fields[3].type]
+ifgoto city.fields.length=4 CityStatsEndValleys
+if city.fields.length>4 Valley4=[city.fields[4].level,city.fields[4].name,city.fields[4].type]
+ifgoto city.fields.length=5 CityStatsEndValleys
+if city.fields.length>5 Valley5=[city.fields[5].level,city.fields[5].name,city.fields[5].type]
+ifgoto city.fields.length=6 CityStatsEndValleys
+if city.fields.length>6 Valley6=[city.fields[6].level,city.fields[6].name,city.fields[6].type]
+ifgoto city.fields.length=7 CityStatsEndValleys
+if city.fields.length>7 Valley7=[city.fields[7].level,city.fields[7].name,city.fields[7].type]
+ifgoto city.fields.length=8 CityStatsEndValleys
+if city.fields.length>8 Valley8=[city.fields[8].level,city.fields[8].name,city.fields[8].type]
+ifgoto city.fields.length=9 CityStatsEndValleys
+if city.fields.length>9 Valley9=[city.fields[9].level,city.fields[9].name,city.fields[9].type]
+label CityStatsEndValleys
+url = "http://" + NEATOServer + ":82/CityStats.php"
+params = {action:"save", csid:csid, server:Config.server, lordname:player.playerInfo.userName, slot:ThisCity, cityname:city.name, x:city.x, y:city.y, lvl:city.getBuildingLevel(31), pop:city.resource.maxPopulation, loy:city.resource.support, griev:city.resource.complaint, tax:city.resource.texRate, gold:floor(city.resource.gold), food:floor(city.resource.food.amount), lumber:floor(city.resource.wood.amount), stone:floor(city.resource.stone.amount), iron:floor(city.resource.iron.amount), heroes:city.heroes.length, defstat:Att[0], defbase:Att[1], pol1stat:Poli1[0], pol1base:Poli1[1], pol1points:Poli1[2], pol1exp:Poli1[3], pol2stat:Poli2[0], pol2base:Poli2[1], pol2points:Poli2[2], pol2exp:Poli2[3], intstat:Int[0], intbase:Int[1], bldtlvl:city.getBuildingLevel(31), bldwlvl:city.getBuildingLevel(32), bldclvl:city.getBuildingLevel(1), bldcqty:city.countBuilding(1, 1, 10), bldblvl:city.getBuildingLevel(2), bldbqty:city.countBuilding(2, 1, 10), bldb10qty:city.countBuilding(2, 10, 10), bldb9qty:city.countBuilding(2, 9, 9), bldb6qty:city.countBuilding(2, 6, 8), bldb5qty:city.countBuilding(2, 5, 5), bldb4qty:city.countBuilding(2, 4, 4), bldb1qty:city.countBuilding(2, 1, 3), bldfhlvl:city.getBuildingLevel(27), bldrlvl:city.getBuildingLevel(29), bldrslvl:city.getBuildingLevel(24), bldbelvl:city.getBuildingLevel(30), bldalvl:city.getBuildingLevel(25), bldelvl:city.getBuildingLevel(28), bldmlvl:city.getBuildingLevel(23), bldinnlvl:city.getBuildingLevel(21), bldwslvl:city.getBuildingLevel(26), bldstlvl:city.getBuildingLevel(20), bldfolvl:city.getBuildingLevel(22), bldwhlvl:city.getBuildingLevel(3), bldflvl:city.getBuildingLevel(7), bldslvl:city.getBuildingLevel(4), bldqlvl:city.getBuildingLevel(5), bldilvl:city.getBuildingLevel(6), bldfqty:city.countBuilding(7, 1, 10), bldsqty:city.countBuilding(4, 1, 10), bldqqty:city.countBuilding(5, 1, 10), bldiqty:city.countBuilding(6, 1, 10), trpwo:city.getAvailableTroop().peasants, trpw:city.getAvailableTroop().militia, trps:city.getAvailableTroop().scouter, trpp:city.getAvailableTroop().pikemen, trpsw:city.getAvailableTroop().swordsmen, trpa:city.getAvailableTroop().archer, trpc:city.getAvailableTroop().lightCavalry, trpcata:city.getAvailableTroop().heavyCavalry, trpt:city.getAvailableTroop().carriage, trpb:city.getAvailableTroop().ballista, trpr:city.getAvailableTroop().batteringRam, trpcp:city.getAvailableTroop().catapult, deftra:city.fortification.trap, defab:city.fortification.abatis, defat:city.fortification.arrowTower, defr:city.fortification.rollingLogs, deftre:city.fortification.rockfall, citystate:Upper1(GetZoneName(city.fieldId)), field0level:Valley0[0], field1level:Valley1[0], field2level:Valley2[0], field3level:Valley3[0], field4level:Valley4[0], field5level:Valley5[0], field6level:Valley6[0], field7level:Valley7[0], field8level:Valley8[0], field9level:Valley9[0], field0name:Valley0[1], field1name:Valley1[1], field2name:Valley2[1], field3name:Valley3[1], field4name:Valley4[1], field5name:Valley5[1], field6name:Valley6[1], field7name:Valley7[1], field8name:Valley8[1], field9name:Valley9[1], field0type:Valley0[2], field1type:Valley1[2], field2type:Valley2[2], field3type:Valley3[2], field4type:Valley4[2], field5type:Valley5[2], field6type:Valley6[2], field7type:Valley7[2], field8type:Valley8[2], field9type:Valley9[2], npcl101m:FindField(city.x, city.y, 1, 12,10).length, npcl58m:FindField(city.x, city.y, 8, 12, 5).length, castle15m:FindField(city.x, city.y, 15, 11).length} 
+get url params
+echo $result
+return

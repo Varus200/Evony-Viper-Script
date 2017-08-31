@@ -1,0 +1,49 @@
+label LevelHeroes
+ifgoto LevelHeroesInitialised = "Yes" LevelHeroesNextNPC
+echo "Checking for available heroes"
+LevelHeroEx ="No"
+LevelHeroesEnable = "No"
+if ThisCity="1" if EnableTrainer="Yes" LevelHeroesEnable = "Yes"
+if ThisCity!="1" if m_city.IsHeroInCastle(H[1]) if m_city.IsHeroInCastle(H[2]) LevelHeroesEnable = "Yes"
+if LevelHeroesEnable = "No" return
+echo "Level Hero - Select Hero to Level"
+if (ThisCity!=1) LvlHero = Pol2
+if LevelHeroTrainer = "Yes" if (ThisCity=1) if LevelTrainerL10!="Yes" LvlHero = H[0]
+echo "This city will level the "+LvlHero+" hero"
+label LevelHeroFindNPC
+echo "Selecting NPC's to level hero."
+RoundStart = date()
+if LevelHeroesL8NPC = "Yes" fields8 = FindField(city.x, city.y, 2, 12, 8)
+fields5 = FindField(city.x, city.y, 4, 12, 5)
+if LevelHeroesL8NPC = "Yes" fields = fields8.concat(fields5).sort(city.compareByDistanceToCastle)
+if LevelHeroesL8NPC != "Yes" fields = fields5.sort(city.compareByDistanceToCastle)
+if fields.length=0 LevelHeroesEnable = "No"
+if fields.length=0 echo "There are no NPC's to level your hero with, disabling Hero Levelling."
+if fields.length=0 return
+if (LevelHeroEx != "Yes") echo "Level Hero: Exclude Targetted NPC's " + FieldIdToCoords(fields[0]) + " " + FieldIdToCoords(fields[1]) + " " + FieldIdToCoords(fields[2]) + " " + FieldIdToCoords(fields[3])
+if (LevelHeroEx != "Yes") execute "excludelist " + FieldIdToCoords(fields[0]) + " " + FieldIdToCoords(fields[1]) + " " + FieldIdToCoords(fields[2]) + " " + FieldIdToCoords(fields[3])
+LevelHeroEx = "Yes"
+i = 0
+ifgoto FieldIdToCoords(fields[i]) = "0,0" LevelHeroFindNPC
+echo "Level Hero - Set Variables"
+Padding = "0"
+if (LvlHero = H[0]) Padding = "60"
+if city.getAvailableTroop().militia<50000 LevelHeroesUseWarriors="None"
+L8Team = "wo:1k,w:2k,s:3k,p:250,sw:250,a:92.5k,t:1k"
+if LvlHero=H[0] L5Team = "b:500,t:100,p:1,sw:1,w:"
+if LvlHero!=H[0] L5Team = "b:600,t:100,p:1,sw:1,w:"
+if LevelHeroesUseWarriors="None" L5Team = L5Team+"1"
+if LevelHeroesUseWarriors!="None" L5Team = L5Team+""+LevelHeroesUseWarriors
+LevelHeroesInitialised = "Yes"
+return
+label LevelHeroesNextNPC
+echo "Level Hero - Attack next NPC"
+level = GetLevel(fields[i])
+if city.findHeroByName(LvlHero).isMayor setMayor remove
+if level = 5 echo "Level Hero: Attacking NPC " + (i + 1) + " of 4 ,L5 NPC " + FieldIdToCoords(fields[i])
+if level = 8 echo "Level Hero: Attacking NPC " + (i + 1) + " of 4 ,L8 NPC " + FieldIdToCoords(fields[i])
+if level = 5 execute "attack " + FieldIdToCoords(fields[i]) + " " + LvlHero + " " + L5Team
+if level = 8 execute "attack " + FieldIdToCoords(fields[i]) + " " + LvlHero + " " + L8Team
+i = i + 1
+if i>=4 i=0
+return

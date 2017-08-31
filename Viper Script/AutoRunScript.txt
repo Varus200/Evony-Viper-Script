@@ -1,0 +1,18 @@
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+//				Nothing to change in this script
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+version="11.0.2"
+echo "New Account Script Version "+version
+//resetplayer {unlockcode:"IReallyWantToDeleteThisAccount",player:""}
+ScriptStage = "StartUp"
+call "NQV-Routines.txt"
+call "NQV-Settings.txt"
+ScriptStage="Initialise"
+call "NQV-Routines.txt"
+ScriptStage="Builds"
+echo "Choosing Build Type"
+if ThisCity=1 if city.getBuildingLevel(31)<4 call "NQV-BuildQuests.txt"
+if ThisCity!=1 if city.getBuildingLevel(31)<4 call "NQV-BuildAddLvl0.txt"
+ScriptStage="Builds"
+call "NQV-Routines.txt"
+repeat

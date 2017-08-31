@@ -1,0 +1,84 @@
+echo "Updating Settings"
+ifgoto ScriptStage="Builds" SettingsCommon
+ifgoto ScriptStage="StartUp" SettingsCommon
+ifgoto ScriptStage="BuildQuests" BuildQuestsSettings
+echo "Error - ScriptStage invalid or not set"
+end
+
+label SettingsCommon
+echo "Setting Variables - Common"	//Settings - Common//
+EnableGoals="Yes" 
+LoopTime = 120			// Sets how often the script will update Goals in Minutes
+NEATO = "Yes"			//Enable or Disable updating of stats to your NEATO Server
+NEATOServer = "localhost:82"	//Set this to the Hostname or IP Address or your NEATO server
+RenameHeroes = "Yes"		//Enable or Disable automatic hero renaming, now includes renaming your Trainer
+HeroRenameHour = 21		//Sets the amount of Loops at which the Hero Renaming routine will run, default 1 week
+HeroRenameLvlFactor = 10	//Sets the factor used in Comparitive Level = Base+(Lvl\Factor)
+H = ["Trainer","Mayor","MayorSpare","Researcher","IntSpare","Defender","Attacker","50"]
+Alliance = "I"		// Change Alliance, change the value here for all accounts to change to this alliance, resigning and quitting current Alliance if necessary
+AcceptQuests = "No"		//Accept all quests, note this will accept Ranks over Titles and slow growth
+AccntMaint = "Yes"		//Enable or Disable Account Maintenance, currently reads system emails
+SpinAmulets = 30		//Spin Amulets once the account has above this value
+AlertEmail = "No"					//Enable or Disable Email Alerting
+AlertEmailRecipientEmail = "EMAILHERE"	//Alert email recipient's address
+AlertEmailRecipientName = "NAMEHERE"			//Alert email recipient's name
+AlertNeighboursEnable="Yes"		//Enable or Disable the alert for new neighbours
+AlertNeighboursDistance = 2		//Set the distance at which you are alerted of new neighbours
+AlertAllianceMembers="Yes"		//Enable or disable an alerting if the amount of members in your alliance changes
+AlertAllianceMembersLord="Lord"	//The lord that checks for Alliance Member changes
+LevelHeroesEnable = "Yes"	//Enable or Disable Levelling heroes with the 4 closest L5/L8 NPC's
+LevelHeroTrainer = "Yes"	//Enable or Disable Levelling the Trainer, disable if he is hitting L10's
+LevelHeroesL8NPC = "No"		//Enable or Disable Levelling heroes with L8 NPC's
+LevelHeroesUseWarriors = "3k"	//Set the amount of Warriors you want to include with your hero levelling teams
+LevelHeroPts = 30		//Set the amount of pts you want the Pol heroes to accumulate from levelling, before they switch
+NewCityAutoBuild = "Yes"	//Enable or Disable automatic city building
+NewCitySlotsToKeep = 0		//The number of free city slots to keep, set to 1 to keep a slot for NPC building
+NewCityTakeOwnedFlats="Yes"	//Enables the script to take flats from Greys and Reds to build new cities
+NewCityMaxDistance = 50		//Maximum distance from your city to build a new city
+NewCityClearance=[10,8,8,8,8]	//Minimum distance from ["Green","Blue","Grey","Red","Unaligned"] castles to build a new city
+NewCityPresFactor = 2
+if EnableGoals!="Yes" return
+
+label SettingsGoals
+GrowthFocus="Title"		//Choose between "Title" to focus on medal farming or "Builds" to focus on L10 Buildings with NPC Farming
+TroopLevel = "Yes"		//Automatically top up cities with farming teams, and then rainbow troops from other cities
+HeroesApplyOtherHeroPts = "No"	//Enable to apply hero points to all heroes, Disable to only apply to the best of each hero in city plus trainer
+KeepHeroLvl = 80		//Keep all heroes above this level, setting this above 80 is recommended to avoid filling FH with high level uneccessary heroes
+CityTypes = ["lumber","lumber","lumber","lumber","lumber","lumber","lumber","lumber","lumber","lumber"]
+ConvAllL10As = "iron"		//Convert all L10s to this resource type
+WarehouseQty = 0		//Include the following amount of warehouses in the city build, at the expense of Barracks
+BuildAddEmbassy = "No"		//Build Embassy's in additional Cities
+DumpCity = "No"			//Enable or Disable sending resources to a Dump City
+DumpCityCoords = "497,500"	//The coords of your dump city
+LevelTrainerL10 = "Yes"		//Enable Trainer to hit L10's instead of L5's
+LevelTrainerL10Range = 2	//Set the range to which your Trainer will travel to hit L10's
+if ScriptStage!="Builds" return
+
+echo "Additonal Routines"
+// Common Routines
+// Alliance Management
+EnableAcceptLords = "No"	// Enable to make any account in the new alliance capable of accepting new members to accept the Lords listed.
+AcceptLords = ["LordA","LordB"]	// Insert Lordnames that you want accepted into the alliance
+
+// Purchase Quest
+// If you have used and completed the quests for Beginners & Primary Guidlines, enable this to have the bot purchase an amulet, complete the purchase items quest, spend your
+// remaining coins on amulets and then spin them.
+EnablePurchaseItemQuest = "Yes"
+
+// Build New City - Multiple city builds can be scheduled by copying the following three lines for each one.
+BuildCityFrom = "CityName"
+NewCityCoords = "xxx,yyy"
+if city.name = BuildCityFrom return
+
+// Insert Additional Lines here
+
+return
+
+label BuildQuestsSettings
+FlagName = "Flag"			//Set the Flag name to set your account to
+if MailLord = null MailLord = "LORDNAMEHERE"	// The script  will choose a random recipient, enable and replace if you wish, if the script can't find one it will use this one now
+CM=["The Human wants to mate","Calling all AutoBots","Greetings","He's leaked lubricants all over my foot! Hmmph!","You have a rodent infestation.","Why are we fighting to save the humans? They're a primitive and violent race.","You feelin' lucky, punk?","At the end of this day, one shall stand, one shall fall", "It's Megatron! Retreat! Move! Fall back!"]
+//CM=["Quest","Hello","Greetings","Quest","Hello","Just Doing Quest","Hi","Howdy","Ciao", "GDay Mate"]
+MailSubject = "Quest"
+MailMessage = "Just starting NQV New Account Script v "+version
+return

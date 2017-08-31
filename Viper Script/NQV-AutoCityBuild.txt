@@ -1,0 +1,90 @@
+label NewCityBuild
+echo "Looking for a location for a new city"
+BuildCityFlatRel=5
+NewCityMaxClr=max(NewCityClearance[0],NewCityClearance[1],NewCityClearance[2],NewCityClearance[3],NewCityClearance[4])
+if NewCityTakeOwnedFlats="Yes" BuildCityFlatRel=1
+NewCityBuildRD=NewCityMaxDistance
+BS=0
+label BuildCityCheckAgain
+echo "Scanning out to "+NewCityMaxDistance+" miles,for flats with no castles over "+FormatNumber(player.playerInfo.prestige/NewCityPresFactor)+" prestige within "+NewCityMaxClr+" miles"
+NCSR=[(city.x-NewCityMaxDistance),(city.y-NewCityMaxDistance),(city.x+NewCityMaxDistance),(city.y+NewCityMaxDistance)]
+IF NCSR[0]<0 UpdateNCSR=NCSR.splice(0,1,(800-NCSR[0])
+IF NCSR[1]<0 UpdateNCSR=NCSR.splice(1,1,(800-NCSR[1])
+IF NCSR[2]>800 UpdateNCSR=NCSR.splice(2,1,(NCSR[2]-800))
+IF NCSR[3]>800 UpdateNCSR=NCSR.splice(3,1,(NCSR[3]-800))
+execute "scanrec "+NCSR[0]+","+NCSR[1]+" "+NCSR[2]+","+NCSR[3]
+NewCityFlat = FindField(city.x, city.y, NewCityMaxDistance, 10, 1).sort(city.compareByDistanceToCastle)
+if (city.getAvailableTroop().archer>=100) NewCityFlat = NewCityFlat.concat(FindField(city.x, city.y, NewCityMaxDistance, 10, 2)).sort(city.compareByDistanceToCastle)
+if (city.getAvailableTroop().archer>=200) NewCityFlat = NewCityFlat.concat(FindField(city.x, city.y, NewCityMaxDistance, 10, 3)).sort(city.compareByDistanceToCastle)
+if (city.getAvailableTroop().militia>=1200) if (city.getAvailableTroop().archer>=400) NewCityFlat = NewCityFlat.concat(FindField(city.x, city.y, NewCityMaxDistance, 10, 4)).sort(city.compareByDistanceToCastle)
+if (city.getAvailableTroop().militia>=2400) if (city.getAvailableTroop().archer>=800) NewCityFlat = NewCityFlat.concat(FindField(city.x, city.y, NewCityMaxDistance, 10, 5)).sort(city.compareByDistanceToCastle)
+if (city.getAvailableTroop().militia>=4800) if (city.getAvailableTroop().archer>=1600) NewCityFlat = NewCityFlat.concat(FindField(city.x, city.y, NewCityMaxDistance, 10, 6)).sort(city.compareByDistanceToCastle)
+if (city.getAvailableTroop().militia>=9600) if (city.getAvailableTroop().archer>=3200) NewCityFlat = NewCityFlat.concat(FindField(city.x, city.y, NewCityMaxDistance, 10, 7)).sort(city.compareByDistanceToCastle)
+if (city.getAvailableTroop().militia>=19200) if (city.getAvailableTroop().archer>=6400) NewCityFlat = NewCityFlat.concat(FindField(city.x, city.y, NewCityMaxDistance, 10, 8)).sort(city.compareByDistanceToCastle)
+if (city.getAvailableTroop().militia>=38400) if (city.getAvailableTroop().archer>=12800) NewCityFlat = NewCityFlat.concat(FindField(city.x, city.y, NewCityMaxDistance, 10, 9)).sort(city.compareByDistanceToCastle)
+if (city.getAvailableTroop().militia>=60000) if (city.getAvailableTroop().archer>=19900) NewCityFlat = NewCityFlat.concat(FindField(city.x, city.y, NewCityMaxDistance, 10, 10)).sort(city.compareByDistanceToCastle)
+ncb=NewCityFlat.length-1
+echo "Found "+NewCityFlat.length+" Flats to check"
+ifgoto NewCityFlat.length=0 NewCityFlatCheckEnd
+
+label NewCityCurrentFlat
+dummy=UpdateDetailInfo(NewCityFlat[ncb])
+det=GetDetailInfo(NewCityFlat[ncb])
+if !det repeat 60
+if !det echo "Can't scan flat "+ FieldIdToCoords(NewCityFlat[ncb])
+if !det goto NewCityCurrentFlat
+echo "Checking flat "+FieldIdToCoords(NewCityFlat[ncb])
+NewCityFlatScanRange=max(NewCityClearance[0],NewCityClearance[1],NewCityClearance[2],NewCityClearance[3])
+NCFCSR=[((NewCityFlat[ncb] MOD 800)-NewCityMaxClr),((floor(NewCityFlat[ncb] / 800))-NewCityMaxClr),((NewCityFlat[ncb] MOD 800)+NewCityMaxClr),((floor(NewCityFlat[ncb] / 800))+NewCityMaxClr)]
+IF NCFCSR[0]<0 UpdateNCFCSR=NCFCSR.splice(0,1,(800+NCFCSR[0]))
+IF NCFCSR[1]<0 UpdateNCFCSR=NCFCSR.splice(1,1,(800+NCFCSR[1]))
+IF NCFCSR[2]>800 UpdateNCFCSR=NCFCSR.splice(2,1,(NCFCSR[2]-800))
+IF NCFCSR[3]>800 UpdateNCFCSR=NCFCSR.splice(3,1,(NCFCSR[3]-800))
+execute "scanrec "+NCFCSR[0]+","+NCFCSR[1]+" "+NCFCSR[2]+","+NCFCSR[3]
+NewCityFlatCastles=AllCastles(GetFieldId(NCFCSR[0],NCFCSR[1]),GetFieldId(NCFCSR[2],NCFCSR[3]))
+echo "Scanning "+NewCityFlatCastles.length+" castles"
+NewCityFlatCastleCount=0
+ifgoto NewCityFlatCastles.length=0 NewCityCurrentFlatEnd
+NewCityFlatCurCastle=0
+label NewCityNC
+echo ["Green Castle","Blue Castle","Grey Castle","Red Castle","","","UnAligned Castle"][NewCityFlatCastles[NewCityFlatCurCastle].relation]+" of Lord:"+NewCityFlatCastles[NewCityFlatCurCastle].userName+" at "+FormatDistance(NewCityFlat[ncb],NewCityFlatCastles[NewCityFlatCurCastle].id)+" miles, with Prestige:"+FormatNumber(NewCityFlatCastles[NewCityFlatCurCastle].prestige)
+if NewCityFlatCastles[NewCityFlatCurCastle].relation=0 if FieldDistance(NewCityFlat[ncb],NewCityFlatCastles[NewCityFlatCurCastle].id)<NewCityClearance[0] echo "Found Green Castle within the specified range"
+if NewCityFlatCastles[NewCityFlatCurCastle].relation=1 if FieldDistance(NewCityFlat[ncb],NewCityFlatCastles[NewCityFlatCurCastle].id)<NewCityClearance[1] echo "Found Blue Castle within the specified range"
+if NewCityFlatCastles[NewCityFlatCurCastle].relation=2 if FieldDistance(NewCityFlat[ncb],NewCityFlatCastles[NewCityFlatCurCastle].id)<NewCityClearance[2] if NewCityFlatCastles[NewCityFlatCurCastle].prestige>(player.playerInfo.prestige/NewCityPresFactor) echo "Found Grey Castle within the specified range above the specified prestige."
+if NewCityFlatCastles[NewCityFlatCurCastle].relation=3 if FieldDistance(NewCityFlat[ncb],NewCityFlatCastles[NewCityFlatCurCastle].id)<NewCityClearance[3] if NewCityFlatCastles[NewCityFlatCurCastle].prestige>(player.playerInfo.prestige/NewCityPresFactor) echo "Found Red Castle within the specified range above the specified prestige."
+if NewCityFlatCastles[NewCityFlatCurCastle].relation=6 if FieldDistance(NewCityFlat[ncb],NewCityFlatCastles[NewCityFlatCurCastle].id)<NewCityClearance[4] if NewCityFlatCastles[NewCityFlatCurCastle].prestige>(player.playerInfo.prestige/NewCityPresFactor) echo "Found UnAligned Castle within the specified range above the specified prestige."
+if NewCityFlatCastles[NewCityFlatCurCastle].relation=0 if FieldDistance(NewCityFlat[ncb],NewCityFlatCastles[NewCityFlatCurCastle].id)<NewCityClearance[0] goto NewCityCurrentFlatEnd
+if NewCityFlatCastles[NewCityFlatCurCastle].relation=1 if FieldDistance(NewCityFlat[ncb],NewCityFlatCastles[NewCityFlatCurCastle].id)<NewCityClearance[1] goto NewCityCurrentFlatEnd
+if NewCityFlatCastles[NewCityFlatCurCastle].relation=2 if FieldDistance(NewCityFlat[ncb],NewCityFlatCastles[NewCityFlatCurCastle].id)<NewCityClearance[2] if NewCityFlatCastles[NewCityFlatCurCastle].prestige>(player.playerInfo.prestige/NewCityPresFactor) goto NewCityCurrentFlatEnd
+if NewCityFlatCastles[NewCityFlatCurCastle].relation=3 if FieldDistance(NewCityFlat[ncb],NewCityFlatCastles[NewCityFlatCurCastle].id)<NewCityClearance[3] if NewCityFlatCastles[NewCityFlatCurCastle].prestige>(player.playerInfo.prestige/NewCityPresFactor) goto NewCityCurrentFlatEnd
+if NewCityFlatCastles[NewCityFlatCurCastle].relation=6 if FieldDistance(NewCityFlat[ncb],NewCityFlatCastles[NewCityFlatCurCastle].id)<NewCityClearance[4] if NewCityFlatCastles[NewCityFlatCurCastle].prestige>(player.playerInfo.prestige/NewCityPresFactor) goto NewCityCurrentFlatEnd
+NewCityFlatCurCastle=NewCityFlatCurCastle+1
+if NewCityFlatCurCastle<NewCityFlatCastles.length goto NewCityNC
+goto NewCityBuildGetFlat
+label NewCityCurrentFlatEnd
+echo "This flat has unsuitable castles within the specified ranges."
+ncb=ncb-1
+ifgoto ncb>=0 NewCityCurrentFlat
+
+label NewCityFlatCheckEnd
+BS=BS+1
+ifgoto BS>=2 BuildCityEnd
+echo "No flats meet your criteria, Looking further out"
+NewCityMaxDistance=NewCityMaxDistance*2
+goto BuildCityCheckAgain
+label BuildCityEnd
+echo "Unable to find a flat at the moment"
+NewCityMaxDistance=NewCityBuildRD
+return
+
+label NewCityBuildGetFlat
+if GetDetailInfo(NewCityFlat[ncb]).relation=6 goto BuildCityBuildNow
+execute "attack "+FieldIdToCoords(NewCityFlat[ncb])+" any s:1"
+execute "sleep "+((city.getTravelTime(city.fieldId, NewCityFlat[ncb], GetTroops("s:1"), 5))-10)
+if city.fields.length=city.getBuildingLevel(31) execute "abandon "+FieldIdToCoords(city.fields[(city.getBuildingLevel(31)-1)].id)
+sleep 15
+label BuildCityBuildNow
+execute "buildcity "+FieldIdToCoords(NewCityFlat[ncb])
+NewCityBuildInProgress="Yes"
+NewCityMaxDistance=NewCityBuildRD
+return

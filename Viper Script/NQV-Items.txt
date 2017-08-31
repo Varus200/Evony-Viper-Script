@@ -1,0 +1,20 @@
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+//				Nothing to change in this script unless you know what you're doing
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+echo "Use Items"
+if (m_context.ItemCount("player.box.special.1")>=1) useitem player.box.special.1	// Junior Medal Box
+if (m_context.ItemCount("player.box.special.2")>=1) useitem player.box.special.2	// Medium Medal Box
+if (m_context.ItemCount("player.box.special.3")>=1) useitem player.box.special.3	// Senior Medal Box
+if (m_context.ItemCount("player.box.troop.a")>=1) useitem player.box.troop.a		// Junior Battalion
+if (m_context.ItemCount("player.box.troop.b")>=1) useitem player.box.troop.b		// Senior Battalion
+if (m_context.ItemCount("player.box.troop.c")>=1) useitem player.box.troop.c		// Veteran Battalion
+//if (m_context.ItemCount("player.box.troop.d")>=1) useitem player.box.troop.d		// Mechanics Battalion
+if (m_context.ItemCount("player.resinc.1")>=1) useitem player.resinc.1			// Use Plowshares
+if (m_context.ItemCount("player.resinc.2")>=1) useitem player.resinc.2			// Use Arch Saw
+if (m_context.ItemCount("player.resinc.3")>=1) useitem player.resinc.3			// Use Quarrying Tools
+if (m_context.ItemCount("player.resinc.4")>=1) useitem player.resinc.4			// Use Blower
+if (m_context.ItemCount("player.resinc.1b")>=1) useitem player.resinc.1b		// Use Iron Rake
+if (m_context.ItemCount("player.resinc.2b")>=1) useitem player.resinc.2b		// Use Double Saw
+if (m_context.ItemCount("player.resinc.3b")>=1) useitem player.resinc.3b		// Use Adv Quarrying Tools
+if (m_context.ItemCount("player.resinc.4b")>=1) useitem player.resinc.4b		// Use Blast Furnace
+return

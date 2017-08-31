@@ -1,0 +1,8 @@
+marketupdate food
+marketupdate wood
+marketupdate stone
+marketupdate iron
+url = "http://" + NEATOServer + ":82/MarketPrices.php"
+data = { action:"save", type:"stats", server:Config.server, foodbuy:BuyPrice(0), foodsell:SellPrice(0), lumberbuy:BuyPrice(1), lumbersell:SellPrice(1), stonebuy:BuyPrice(2), stonesell:SellPrice(2), ironbuy:BuyPrice(3), ironsell:SellPrice(3) }
+get url data
+return

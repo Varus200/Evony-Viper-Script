@@ -1,0 +1,814 @@
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+//				Nothing to change in this script
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+echo "Updating Goals"
+gosub city
+gosub defence
+gosub heroes
+gosub npcs
+gosub valleys
+if ScriptStage!="BuildAdd0" gosub research
+if ScriptStage!="BuildAdd0" gosub builds
+gosub troops
+gosub walls
+if ScriptStage!="BuildAdd0" gosub market
+return
+
+label city
+echo "Set Goals - City"
+distancepolicy 10 15 10 50 15
+rallypolicy r:1 t:1
+config comfort:1
+if city.getBuildingLevel(31)>=9 comfortpolicy 15 20 popraise
+return
+
+label defence
+echo "Set Goals - Defence"
+gatepolicy 2 0 2 2 2
+defensepolicy /junktroop:500 /usespeech:5 /usetruce:96
+config gate:0.2,attackgap:3,defensecooldown:10,embassy:1,hiding:0.5
+return
+
+label heroes
+echo "Set Goals - Heroes"
+HeroesKH="keepheroes any:base>="+KeepHeroLvl
+execute HeroesKH
+config trainint:1,trainpol:1
+if HeroesApplyOtherHeroPts="No" NLHeroes = "nolevelheroes !" + H[0]+ ",!" + Pol1 + ",!" + H[3] + ",!"+ H[5] + ",any"
+if HeroesApplyOtherHeroPts="No" echo NLHeroes
+if HeroesApplyOtherHeroPts="No" execute NLHeroes
+if EnableTrainer="Yes" if (ThisCity="1") gth="traininghero "+H[0]
+if EnableTrainer="Yes" if (ThisCity!="1") gth="traininghero "+H[0]+" 30 60 0"
+if EnableTrainer="Yes" if LevelTrainerL10="Yes" gth="traininghero "+H[0]+" 30 "+(FindField(city.x, city.y, LevelTrainerL10Range, 12,10).length*240)+" "+FindField(city.x, city.y, LevelTrainerL10Range, 12,10).length
+if EnableTrainer="Yes" if (city.getBuildingLevel(27) >= "6") execute gth
+if EnableTrainer="Yes" if (city.getBuildingLevel(27) >= "6") echo gth
+if (city.getBuildingLevel(27) >= "1") config hero:11
+if (city.getBuildingLevel(27) >= "5") config hero:21
+if city.getBuildingLevel(21)=0 config hero:1
+if city.getBuildingLevel(21)>0 if city.resource.gold<"10000000" config fasthero:60
+if city.getBuildingLevel(21)>0 if city.resource.gold>="10000000" config fasthero:70
+gvh="valleyheroes !"+H[1]+",any"
+ifgoto AccntState!="Peace" HeroesEnd
+if (city.getAvailableTroop().ballista<500) if m_city.IsHeroInCastle(H[2])=false if m_city.IsHeroInCastle(H[3])=false if m_city.IsHeroInCastle(H[5])=false npcheroes any:pol<best
+if (city.getAvailableTroop().ballista>500) if m_city.IsHeroInCastle(H[2])=false if m_city.IsHeroInCastle(H[3])=false if m_city.IsHeroInCastle(H[5])=false npcheroes any:att=best
+if (city.getAvailableTroop().ballista>1100) if m_city.IsHeroInCastle(H[2])=false if m_city.IsHeroInCastle(H[3])=false if m_city.IsHeroInCastle(H[5])=false npcheroes any:int=best
+if (city.getAvailableTroop().ballista>1700) if m_city.IsHeroInCastle(H[2])=false if m_city.IsHeroInCastle(H[3])=false if m_city.IsHeroInCastle(H[5])=false npcheroes any:pol<best
+if m_city.IsHeroInCastle(H[2])=false if m_city.IsHeroInCastle(H[3])=false if m_city.IsHeroInCastle(H[5])=false return
+ifgoto (ThisCity!="1") HeroesOtherCity
+if EnableTrainer="Yes" if (city.getAvailableTroop().ballista<500) gnh="npcheroes 5 !"+Pol1+","+H[0]+","+H[3]+","+Pol2
+if EnableTrainer="Yes" if (city.getAvailableTroop().ballista>=500) gnh="npcheroes 5 !"+Pol1+","+H[0]
+if EnableTrainer="Yes" if (city.getAvailableTroop().ballista>=1100) gnh="npcheroes 5 !"+Pol1+","+H[0]+","+H[3]
+if EnableTrainer="Yes" if (city.getAvailableTroop().ballista>=1700) gnh="npcheroes 5 !"+Pol1+","+H[0]+","+H[3]+","+Pol2
+if EnableTrainer="Yes" if LevelHeroesEnable = "Yes" if LvlHero=H[0] gnh="npcheroes 5 !"+H[0]+",!"+Pol1+","+Pol2+","+H[3]+","+H[5]
+if EnableTrainer="Yes" if LevelHeroesEnable = "Yes" if LevelTrainerL10="Yes" gnh="npcheroes 5 !"+H[0]+",!"+Pol1+",!"+Pol2+","+H[3]+","+H[5]+","+H[6]
+if EnableTrainer="Yes" if (city.getAvailableTroop().ballista>=500) gvh="valleyheroes !"+Pol1+",!"+H[0]+",any"
+if EnableTrainer="Yes" if (city.getAvailableTroop().ballista>=1100) gvh="valleyheroes !"+Pol1+",!"+H[0]+",!"+H[3]+",any"
+if EnableTrainer="Yes" if (city.getAvailableTroop().ballista>=1700) gvh="valleyheroes !"+Pol1+",!"+H[0]+",!"+H[3]+",!"+Pol2+",any"
+if EnableTrainer="Yes" if LevelHeroesEnable = "Yes" if LvlHero=H[0] gvh="valleyheroes !"+H[0]+",!"+Pol1+",!"+H[0]+",!"+H[3]+",!"+Pol2+",!"+H[5]+",any"
+if EnableTrainer="No" if (city.getAvailableTroop().ballista<500) gnh="npcheroes 5 !"+Pol1+","+H[5]+","+H[3]+","+Pol2
+if EnableTrainer="No" if (city.getAvailableTroop().ballista>=500) gnh="npcheroes 5 !"+Pol1+","+H[5]
+if EnableTrainer="No" if (city.getAvailableTroop().ballista>=1100) gnh="npcheroes 5 !"+Pol1+","+H[5]+","+H[3]
+if EnableTrainer="No" if (city.getAvailableTroop().ballista>=1700) gnh="npcheroes 5 !"+Pol1+","+H[5]+","+H[3]+","+Pol2
+if EnableTrainer="No" if LevelHeroesEnable = "Yes" if LvlHero=Pol1 gnh="npcheroes 5 !"+Pol1+",!"+Pol2+","+H[5]+","+H[3]+","+H[6]
+if EnableTrainer="No" if LevelHeroesEnable = "Yes" if LvlHero=Pol2 gnh="npcheroes 5 !"+Pol1+",!"+Pol2+","+H[5]+","+H[3]+","+H[6]
+if EnableTrainer="No" if (city.getAvailableTroop().ballista>=500) gvh="valleyheroes !"+Pol1+",!"+H[5]+",any"
+if EnableTrainer="No" if (city.getAvailableTroop().ballista>=1100) gvh="valleyheroes !"+Pol1+",!"+H[5]+",!"+H[3]+",any"
+if EnableTrainer="No" if (city.getAvailableTroop().ballista>=1700) gvh="valleyheroes !"+Pol1+",!"+H[5]+",!"+H[3]+",!"+Pol2+",any"
+if EnableTrainer="No" if LevelHeroesEnable = "Yes" if LvlHero=Pol1 gvh="valleyheroes !"+Pol1+",!"+Pol2+",!"+H[5]+",!"+H[3]+",!"+H[6]+",any"
+if EnableTrainer="No" if LevelHeroesEnable = "Yes" if LvlHero=Pol2 gvh="valleyheroes !"+Pol1+",!"+Pol2+",!"+H[5]+",!"+H[3]+",!"+H[6]+",any"
+if AccntState!="Peace" gvh="valleyheroes !"+Pol1+",any"
+goto HeroesEnd
+label HeroesOtherCity
+if (city.getAvailableTroop().ballista<600) gnh="npcheroes 5 !"+Pol1+","+H[3]+","+Pol2+","+H[5]
+if (city.getAvailableTroop().ballista>=600) gnh="npcheroes 5 !"+Pol1+","+H[3]
+if (city.getAvailableTroop().ballista>=1100) gnh="npcheroes 5 !"+Pol1+","+H[3]+","+Pol2
+if (city.getAvailableTroop().ballista>=1700) gnh="npcheroes 5 !"+Pol1+","+H[3]+","+Pol2+","+H[5]
+if (city.getAvailableTroop().ballista>=1700) if LevelHeroesEnable = "Yes" gnh="npcheroes 5 !"+H[0]+",!"+Pol1+",!"+Pol2+","+H[3]+","+H[6]+","+H[5]
+if (city.getAvailableTroop().ballista<600) gvh="valleyheroes !"+Pol1+",!"+H[0]+",any"
+if (city.getAvailableTroop().ballista>=600) gvh="valleyheroes !"+Pol1+",!"+H[0]+",!"+H[3]+",any"
+if (city.getAvailableTroop().ballista>=1100) gvh="valleyheroes !"+Pol1+",!"+H[0]+",!"+H[3]+",!"+Pol2+",any"
+if (city.getAvailableTroop().ballista>=1700) gvh="valleyheroes !"+Pol1+",!"+H[0]+",!"+H[3]+",!"+Pol2+",!"+H[5]+",any"
+if (city.getAvailableTroop().ballista>=1700) if LevelHeroesEnable = "Yes" gvh="valleyheroes !"+Pol1+",!"+H[0]+",!"+H[3]+",!"+Pol2+",!"+H[5]+",!"+H[6]+",any"
+if AccntState!="Peace" gvh="valleyheroes !"+H[0]+",!"+Pol1+",any"
+label HeroesEnd
+if GrowthFocus="Builds" if (city.getAvailableTroop().ballista>=3700) if m_context.ItemCount("consume.blueprint.1")<3 gnh=gnh+",any"
+if (city.getAvailableTroop().ballista>=3700) if m_context.Player.playerInfo.titleId=9 gnh=gnh+",any"
+if AccntState="Peace" execute gnh
+if AccntState="Peace" echo gnh
+execute gvh
+echo gvh
+return
+
+label npcs
+echo "Set Goals - NPCs"
+ifgoto AccntState!="Peace" NPCEnd
+if (ThisCity="1") if (city.getAvailableTroop().ballista<500) config npc:1
+if (ThisCity="1") if (city.getAvailableTroop().ballista>=500) config npc:5
+if (ThisCity!="1") if (city.getAvailableTroop().ballista<600) config npc:1
+if (ThisCity!="1") if (city.getAvailableTroop().ballista>=600) config npc:5
+farmingpolicy 5 /mindistance:1 /maxdistance:8 /farmingcycle:8 /safeballs:600
+ballsused 20,50,170,250,500
+label NPCEnd
+if LevelTrainerL10!="Yes" return
+echo "L10 NPC Farming Enabled"
+farmingpolicy 10 /mindistance:1 /maxdistance:2 /farmingcycle:0.5
+npctroops 10 wo:1,w:1,s:4996,p:1,sw:1,a:93k,t:2k 
+npchL10 = "npcheroes 10 "+H[0]
+execute npchL10
+npclimits 10 a:185k 
+return
+
+label valleys
+echo "Set Goals - Valley's"
+if (city.getAvailableTroop().militia>=60k) if (city.getAvailableTroop().archer>=20k) goto ValleyLevel10
+if (city.getAvailableTroop().militia>=38.4k) if (city.getAvailableTroop().archer>=12.8k) goto ValleyLevel9
+if (city.getAvailableTroop().militia>=19.2k) if (city.getAvailableTroop().archer>=6.4k) goto ValleyLevel8
+if (city.getAvailableTroop().militia>=9.6k) if (city.getAvailableTroop().archer>=3.2k) goto ValleyLevel7
+if (city.getAvailableTroop().militia>=4.8k) if (city.getAvailableTroop().archer>=1.6k) goto ValleyLevel6
+if (city.getAvailableTroop().militia>=2.4k) if (city.getAvailableTroop().archer>=800) goto ValleyLevel5
+if (city.getAvailableTroop().militia>=1.2k) if (city.getAvailableTroop().archer>=400) goto ValleyLevel4
+echo "Set Valleys Level 1"
+config valley:10,valleymin:1
+if m_context.Player.playerInfo.titleId<9 safevalleyfarm 1,2,3
+goto ValleyLevelEnd
+
+label ValleyLevel10
+echo "Set Valleys Level 10"
+config valley:10
+if m_context.Player.playerInfo.titleId<9 safevalleyfarm 8,9,10
+goto ValleyLevelEnd
+
+label ValleyLevel9
+echo "Set Valleys Level 9"
+config valley:10,valleymin:6
+if m_context.Player.playerInfo.titleId<9 safevalleyfarm 7,8,9
+goto ValleyLevelEnd
+
+label ValleyLevel8
+echo "Set Valleys Level 8"
+config valley:10,valleymin:5
+if m_context.Player.playerInfo.titleId<9 safevalleyfarm 6,7,8
+goto ValleyLevelEnd
+
+label ValleyLevel7
+echo "Set Valleys Level 7"
+config valley:10,valleymin:4
+if m_context.Player.playerInfo.titleId<9 safevalleyfarm 5,6,7
+goto ValleyLevelEnd
+
+label ValleyLevel6
+echo "Set Valleys Level 6"
+config valley:10,valleymin:3
+if m_context.Player.playerInfo.titleId<9 safevalleyfarm 4,5,6
+goto ValleyLevelEnd
+
+label ValleyLevel5
+echo "Set Valleys Level 5"
+config valley:10,valleymin:2
+if m_context.Player.playerInfo.titleId<9 safevalleyfarm 3,4,5
+goto ValleyLevelEnd
+
+label ValleyLevel4
+echo "Set Valleys Level 4"
+config valley:10,valleymin:1
+if m_context.Player.playerInfo.titleId<9 safevalleyfarm 2,3,4
+
+label ValleyLevelEnd
+
+valleytroops 1 a:50
+valleytroops 2 a:100
+valleytroops 3 a:200
+if (city.getBuildingLevel(29)>="1") valleytroops 4 w:1200,s:1,p:1,sw:1,a:400
+if (city.getBuildingLevel(29)>="1") valleytroops 5 w:2400,s:1,p:1,sw:1,c:1,a:800
+if (city.getBuildingLevel(29)>="1") valleytroops 6 w:4800,s:1,p:1,sw:1,c:1,a:1600
+if (city.getBuildingLevel(29)>="2") valleytroops 7 w:9600,s:1,p:1,sw:1,c:1,a:3200
+if (city.getBuildingLevel(29)>="3") valleytroops 8 w:19200,s:1,p:1,sw:1,c:1,a:6400
+if (city.getBuildingLevel(29)>="6") valleytroops 9 w:38400,s:1,p:1,sw:1,c:1,a:12800
+if (city.getBuildingLevel(29)>="8") valleytroops 10 w:60000,s:1,p:1,sw:1,c:1,a:19900
+if NewCityAutoBuild="Yes" if NewCitySlotsToKeep=0 return
+config buildnpc:15
+npcbuildpolicy /level:5 /mindistance:1 /maxdistance:8
+npcbuildpolicy /level:10 /mindistance:1 /maxdistance:1
+return
+
+label market
+echo "Set Goals - Trade"
+ifgoto city.resource.gold>50m Res10
+ifgoto city.resource.gold>10m Res9
+ifgoto city.resource.gold>5m Res8
+ifgoto city.countBuilding(2, 8)>="1" Res7
+ifgoto city.countBuilding(2, 6)>="1" Res6
+ifgoto city.countBuilding(4, 7)>="1" Res5
+ifgoto city.countBuilding(1, 5)>="1" Res4
+ifgoto city.countBuilding(2, 4)>="1" Res3
+ifgoto city.countBuilding(1, 3)>="1" Res2
+ifgoto city.countBuilding(1, 2)>="1" Res1
+
+echo "Trade Level 0"
+R = [1000,5000,10000,10000,5000]
+goto SetTrade
+
+label Res10
+echo "Trade Level 10"
+R = [100000000,800000,12000000,12000000,12000000]
+goto SetTrade
+
+label Res9
+echo "Trade Level 9"
+R = [2000000,800000,4000000,4000000,4000000]
+goto SetTrade
+
+label Res8
+echo "Trade Level 8"
+R = [250000,800000,1000000,1000000,1000000]
+goto SetTrade
+
+label Res7
+echo "Trade Level 7"
+R = [150000,800000,650000,770000,250000]
+goto SetTrade
+
+label Res6
+echo "Trade Level 6"
+R = [100000,500000,350000,400000,200000]
+goto SetTrade
+
+label Res5
+echo "Trade Level 5"
+R = [50000,200000,150000,150000,125000]
+goto SetTrade
+
+label Res4
+echo "Trade Level 4"
+R = [50000,200000,100000,100000,75000]
+goto SetTrade
+
+label Res3
+echo "Trade Level 3"
+R = [20000,100000,75000,75000,50000]
+goto SetTrade
+
+label Res2
+echo "Trade Level 2"
+R = [10000,20000,40000,40000,40000]
+goto SetTrade
+
+label Res1
+echo "Trade Level 1"
+R = [10000,10000,20000,20000,10000]
+goto SetTrade
+
+label SetTrade
+ifgosub DumpCity = "Yes" DumpCity
+TMinF = 1.0
+TMaxF = 1.8
+TEmrgF = 2.5
+RRes = [1.0,1.0,0.25,0.5]
+SRes = [1.1,0.1,0.6]
+R0=R[0]
+R1=R[1]
+R2=R[2]
+R3=R[3]
+R4=R[4]
+//if R[0]<city.reservedResource.gold R0=city.reservedResource.gold
+if R[1]<city.reservedResource.food R1=city.reservedResource.food
+if R[2]<city.reservedResource.wood R2=city.reservedResource.wood
+if R[3]<city.reservedResource.stone R3=city.reservedResource.stone
+if R[4]<city.reservedResource.iron R4=city.reservedResource.iron
+if DumpCity = "Yes" if citytype="iron" R2=R2*1.5
+if DumpCity = "Yes" if citytype!="iron" R4=R4*1.5
+R=[R0,R1,R2,R3,R4]
+tradegold = "tradepolicy /type:gold /min:" + R[0]
+if city.reservedResource.food*2 >= R[1] tradefood = "tradepolicy /type:food /min:2d /max:3d"
+if city.reservedResource.food*2 < R[1] tradefood = "tradepolicy /type:food /min:" + R[1] + " /max:" + R[1]*TMaxF
+tradewood = "tradepolicy /type:wood /min:" + R[2]*TMinF + " /max:" + R[2]*TMaxF + " /allowselltomin"
+tradestone = "tradepolicy /type:stone /min:" + R[3]*TMinF + " /max:" + R[3]*TMaxF + " /allowselltomin"
+tradeiron = "tradepolicy /type:iron /min:" + R[4]*TMinF + " /max:" + R[4]*TMaxF + " /allowselltomin"
+config trade:0
+execute tradegold
+execute tradefood
+execute tradewood
+execute tradestone
+execute tradeiron
+config trade:1
+echo "Current Trade Levels are"
+echo R
+RRes0 = "requestresources /slots=1 any gold 100k 1m 50k 100k s"
+RRes1 = "requestresources /slots=1 any wood "+R[2]*RRes[0]+" "+R[2]*RRes[1]+" "+R[2]*RRes[2]+" "+R[2]*RRes[3]+" c"
+RRes2 = "requestresources /slots=1 any iron "+R[3]*RRes[0]+" "+R[3]*RRes[1]+" "+R[3]*RRes[2]+" "+R[3]*RRes[3]+" c"
+RRes3 = "requestresources /slots=1 any stone "+R[4]*RRes[0]+" "+R[4]*RRes[1]+" "+R[4]*RRes[2]+" "+R[4]*RRes[3]+" c"
+RRes4 = "requestresources /slots=1 any food 350m 650m 50m 100m t"
+execute RRes0
+execute RRes1
+execute RRes2
+execute RRes3
+execute RRes4
+if DumpCity = "No" return
+SRes0="sendresources /slots=1 "+DumpCityCoords+" "+CB[5]+" "+R[2]*SRes[0]+" * "+R[2]*SRes[1]+" "+R[2]*SRes[2]+" c"
+echo SRes0
+execute SRes0
+return
+
+label DumpCity
+if DumpCityCoords = city.coords DumpCity = "No"
+if DumpCityCoords = city.coords return
+if DumpCity = "Yes" echo "Checking DumpCity Lords Prestige"
+label DumpCityFind
+targetId = GetFieldId(DumpCityCoords)
+details = GetDetailInfo(targetId,true)
+if details = null sleep 30
+if details = null loop 2 DumpCityFind
+if (player.playerInfo.prestige*2.99 < details.prestige) echo "DumpCity Lord has more than three times your prestige, disabling DumpCity"
+if (player.playerInfo.prestige*2.99 > details.prestige) echo "DumpCity Lord prestige okay, enabling DumpCity"
+if (player.playerInfo.prestige*2.99 < details.prestige) DumpCity = "No"
+return
+
+label walls
+echo "Set Goals - Walls"
+if (date() - player.playerInfo.createrTime > 432000000) if (city.getBuildingLevel(2)>=1) fortification tra:500,ab:500,at:500
+if (date() - player.playerInfo.createrTime > 432000000) if (city.getBuildingLevel(2)>=2) fortification tra:1k,ab:1k,at:10k
+if (date() - player.playerInfo.createrTime > 432000000) if (city.getBuildingLevel(2)>=3) fortification tra:2k,ab:2k,r:200,tre:200,at:18k
+return
+
+label troops
+echo "Set Goals - Troops"
+config troopqueuetime:.75,troopidlequeuetime:5
+if city.resource.gold>5m config troopsusepopmax:1
+troop w:10,s:10,p:10,sw:10,a:10,c:10
+troop a:400,wo:250
+if (city.getAvailableTroop().archer>=190k) troop b:6k,t:6k,p:10k,sw:10k,cata:5k,r:1k,cp:1k,c:30k,wo:3k,a:200k,w:400k,s:500k
+ifgoto (city.getAvailableTroop().archer>=190k) TroopsEnd
+if (city.getAvailableTroop().archer>=21k) troop b:3k,t:3k,s:500,p:500,sw:500,cata:500,r:500,cp:500,c:15k,wo:3k,w:100k,a:200k
+ifgoto (city.getAvailableTroop().archer>=21k) TroopsEnd
+if (city.getAvailableTroop().archer>=13k) troop b:3k,t:3k,s:50,p:50,sw:50,cata:50,wo:3k,c:1k,a:25k,w:70k
+ifgoto (city.getAvailableTroop().archer>=13k) TroopsEnd
+if (city.getAvailableTroop().archer>=6.5k) troop b:3k,t:3k,s:50,p:50,sw:50,c:50,cata:50,wo:2k,a:14k,w:40k
+ifgoto (city.getAvailableTroop().archer>=6.5k) TroopsEnd
+if (city.getAvailableTroop().archer>=3.2k) troop b:3k,t:3k,s:50,p:50,sw:50,c:50,wo:1k,a:7k,w:20k
+ifgoto (city.getAvailableTroop().archer>=3.2k) TroopsEnd
+if (city.getAvailableTroop().archer>=1.5k) troop b:3k,t:3k,s:50,p:50,sw:50,c:50,wo:1k,a:3.5k,w:10k
+ifgoto (city.getAvailableTroop().archer>=1.5k) TroopsEnd
+if (city.getAvailableTroop().archer>=800) troop b:3k,t:3k,s:40,p:40,sw:40,c:40,cata:50,wo:250,a:1.8k,w:5k
+ifgoto (city.getAvailableTroop().archer>=800) TroopsEnd
+if (city.getAvailableTroop().archer>=440) troop b:3k,t:3k,s:20,p:20,sw:20,c:20,wo:250,a:900,w:2.5k
+ifgoto (city.getAvailableTroop().archer>=440) TroopsEnd
+if (city.getAvailableTroop().archer>=220) troop b:3k,t:3k,wo:250,a:500,w:1350
+label TroopsEnd
+if TroopLevel="Yes" if city.getBuildingLevel(27)>=2 if city.getBuildingLevel(29)>=2 requesttroops /slots=1 any b 1800 1800 600 600
+if TroopLevel="Yes" if city.getBuildingLevel(27)>=2 if city.getBuildingLevel(29)>=2 requesttroops /slots=1 any t 1800 1800 600 600
+if TroopLevel="Yes" if city.getBuildingLevel(27)>=6 if city.getBuildingLevel(29)>=6 requesttroops /slots=1 any b 3500 4500 600 600
+if TroopLevel="Yes" if city.getBuildingLevel(27)>=6 if city.getBuildingLevel(29)>=6 requesttroops /slots=1 any t 3500 4500 600 600
+if TroopLevel="Yes" if city.getBuildingLevel(27)>=4 if city.getBuildingLevel(29)>=4 if city.getAvailableTroop().carriage>=600 if city.getAvailableTroop().ballista>=600 requesttroops any /slots=1 wo 100 1800 600 600
+if TroopLevel="Yes" if city.getBuildingLevel(27)>=4 if city.getBuildingLevel(29)>=4 if city.getAvailableTroop().carriage>=600 if city.getAvailableTroop().ballista>=600 requesttroops any /slots=1 w 100 1k 50 100
+if TroopLevel="Yes" if city.getBuildingLevel(27)>=4 if city.getBuildingLevel(29)>=4 if city.getAvailableTroop().carriage>=600 if city.getAvailableTroop().ballista>=600 requesttroops any /slots=1 s 100 1k 50 100
+if TroopLevel="Yes" if city.getBuildingLevel(27)>=4 if city.getBuildingLevel(29)>=4 if city.getAvailableTroop().carriage>=600 if city.getAvailableTroop().ballista>=600 requesttroops any /slots=1 p 100 1k 50 100
+if TroopLevel="Yes" if city.getBuildingLevel(27)>=4 if city.getBuildingLevel(29)>=4 if city.getAvailableTroop().carriage>=600 if city.getAvailableTroop().ballista>=600 requesttroops any /slots=1 sw 100 1k 50 100
+if TroopLevel="Yes" if city.getBuildingLevel(27)>=4 if city.getBuildingLevel(29)>=4 if city.getAvailableTroop().carriage>=600 if city.getAvailableTroop().ballista>=600 requesttroops any /slots=1 a 1800 1800 600 600
+if TroopLevel="Yes" if city.getBuildingLevel(27)>=6 if city.getBuildingLevel(29)>=6 if city.getAvailableTroop().carriage>=3000 if city.getAvailableTroop().ballista>=3000 requesttroops any /slots=1 wo 1k 2k 600 600
+if TroopLevel="Yes" if city.getBuildingLevel(27)>=6 if city.getBuildingLevel(29)>=6 if city.getAvailableTroop().carriage>=3000 if city.getAvailableTroop().ballista>=3000 requesttroops any /slots=1 w 70k 70k 10k 20k
+if TroopLevel="Yes" if city.getBuildingLevel(27)>=6 if city.getBuildingLevel(29)>=6 if city.getAvailableTroop().carriage>=3000 if city.getAvailableTroop().ballista>=3000 requesttroops any /slots=1 s 3k 5k 1k 2k
+if TroopLevel="Yes" if city.getBuildingLevel(27)>=6 if city.getBuildingLevel(29)>=6 if city.getAvailableTroop().carriage>=3000 if city.getAvailableTroop().ballista>=3000 requesttroops any /slots=1 p 3k 5k 1k 2k
+if TroopLevel="Yes" if city.getBuildingLevel(27)>=6 if city.getBuildingLevel(29)>=6 if city.getAvailableTroop().carriage>=3000 if city.getAvailableTroop().ballista>=3000 requesttroops any /slots=1 sw 3k 5k 1k 2k
+if TroopLevel="Yes" if city.getBuildingLevel(27)>=6 if city.getBuildingLevel(29)>=6 if city.getAvailableTroop().carriage>=3000 if city.getAvailableTroop().ballista>=3000 requesttroops any /slots=1 a 100k 150k 20k 40k
+if TroopLevel="Yes" if city.getBuildingLevel(27)>=6 if city.getBuildingLevel(29)>=6 if city.getAvailableTroop().carriage>=3000 if city.getAvailableTroop().ballista>=3000 requesttroops any /slots=1 r 1k 0.8k 100 200
+if TroopLevel="Yes" if city.getBuildingLevel(27)>=6 if city.getBuildingLevel(29)>=6 if city.getAvailableTroop().carriage>=3000 if city.getAvailableTroop().ballista>=3000 requesttroops any /slots=1 cp 1k 0.8k 100 200
+return
+
+label research
+echo "Set Goals - Research"
+ifgoto city.getBuildingLevel(25) = "0" ResearchEnd
+ifgoto m_context.cities.length=1 Citys1
+ifgoto m_context.cities.length=2 Citys2
+ifgoto m_context.cities.length=3 Citys3
+ifgoto m_context.cities.length>=4 Citys4
+
+label Citys1                             //Research Goals for a single city account
+echo "This is a 1 City Account"
+research ag:1,lu:1			//Common Researches
+research ag:2,lu:2,ms:1
+research ag:3,lu:3,mas:2,mi:3,mt:1
+rsrch="research "+CB[0]+":4,met:1,in:3,ir:1"
+execute rsrch
+rsrch="research "+CB[0]+":5,lo:1,ar:1 ?be:5?in:5"
+execute rsrch
+rsrch="research "+CB[0]+":6,ho:1,con:5 ?be:6?in:6"
+execute rsrch
+rsrch="research "+CB[0]+":7,met:5,com:5,ho:4,ar:6 ?be:7?in:7"
+execute rsrch
+research ar:8,mt:5,ho:5			//L5 NPC Farming Techs - This is the goal for the end of BP
+research mt:7,ho:6
+research ?be:8?in:8				//Ensure we can see what's coming
+research ?be:9?in:10
+research met:9,ms:10,con:10		//Maximise troop training and build speed
+research ar:9
+research ho:9
+research ar:10
+rsrch="research "+CB[0]+":9"
+execute rsrch
+research mt:10,lo:10,com:10,med:10	//L10 NPC Farming Techs
+research en:10,mac:10,ir:10		//Defensive Techs
+research ?ws:10?met:10 ?st:10?ho:10 ?fo:10?ms:10
+research ?s:10:1?lu:10 ?f:10:1?ag:10 ?q:10:1?mas:10 ?i:10:1?mi:10 ?a:10?pr:10 ?s:9:1?lu:9 ?f:9:1?ag:9 ?q:9:1?mas:9 ?i:9:1?mi:9
+if WarehouseQty!=0 research sp:10
+goto ResearchEnd
+
+label Citys2                             //Research Goals for a two city account
+echo "This is a two city Account"
+ifgoto ThisCity = "2" City2b
+
+label City2a				//Techs relying on Forge & Stable
+echo "This is City 1"
+research ag:1,lu:1			//Common Researches
+research ag:2,lu:2,ms:1
+research ag:3,lu:3,mas:2,mi:3,mt:1
+rsrch="research "+CB[0]+":4,met:1,in:3,ir:1"
+execute rsrch
+rsrch="research "+CB[0]+":5,ag:5,in:5,lo:1,ar:1"
+execute rsrch
+rsrch="research "+CB[0]+":6,in:6,ho:1,con:5"
+execute rsrch
+rsrch="research "+CB[0]+":7,met:5,in:7,com:5,ho:4,ar:6"
+execute rsrch
+research ar:9
+research ho:9
+research ar:10
+research mt:10,lo:10,com:10,med:10	//L10 NPC Farming Techs
+research en:10,mac:10,ir:10		//Defensive Techs
+research ?ws:10?met:10 ?st:10?ho:10 ?fo:10?ms:10
+research ?s:10:1?lu:10 ?f:10:1?ag:10 ?q:10:1?mas:10 ?i:10:1?mi:10 ?a:10?pr:10 ?s:9:1?lu:9 ?f:9:1?ag:9 ?q:9:1?mas:9 ?i:9:1?mi:9
+if WarehouseQty!=0 research sp:10
+goto ResearchEnd
+
+label City2b				//Techs relying on WorkShop
+echo "This is City 2"
+research ag:1,lu:1
+research ag:2,lu:2,ms:1
+research ag:3,lu:3,mas:2,mi:3,mt:1
+rsrch="research "+CB[0]+":4,ag:4,met:1,in:3,ir:1"
+execute rsrch
+rsrch="research "+CB[0]+":5,ag:5,in:5,lo:1,ar:1"
+execute rsrch
+rsrch="research "+CB[0]+":6,in:6,ho:1,con:5"
+execute rsrch
+rsrch="research "+CB[0]+":7,met:5,in:7,com:5"
+execute rsrch
+rsrch="research "+CB[0]+":8,mt:7,ho:6"			//L5 NPC Farming Techs - This is the goal for the end of BP
+execute rsrch
+research in:10				//Ensure we can see what's coming
+research met:9,ms:10,con:10		//Maximise troop training and build speed
+research mt:10,lo:10,com:10,med:10	//L10 NPC Farming Techs
+research en:10,mac:10,ir:10		//Defensive Techs
+research ?ws:10?met:10 ?st:10?ho:10 ?fo:10?ms:10
+research ?s:10:1?lu:10 ?f:10:1?ag:10 ?q:10:1?mas:10 ?i:10:1?mi:10 ?a:10?pr:10 ?s:9:1?lu:9 ?f:9:1?ag:9 ?q:9:1?mas:9 ?i:9:1?mi:9
+if WarehouseQty!=0 research sp:10
+goto ResearchEnd
+
+label Citys3				//Research Goals for a three city account
+echo "This is a 3 City Account"
+ifgoto ThisCity = "2" City3b
+ifgoto ThisCity = "3" City3c
+label City3a				//Get to Arch 10 ASAP
+echo "This is City 1"
+research ag:1
+research ag:2,ms:1
+research ag:3,lu:3,mas:2,mi:3,mt:1
+research met:1
+research ar:1
+research con:5
+research ar:8
+research ho:9
+research mt:10,lo:10,com:10,med:10	//L10 NPC Farming Techs
+research en:10,mac:10,ir:10		//Defensive Techs
+research ?ws:10?met:10 ?st:10?ho:10 ?fo:10?ms:10
+research ?s:10:1?lu:10 ?f:10:1?ag:10 ?q:10:1?mas:10 ?i:10:1?mi:10 ?a:10?pr:10 ?s:9:1?lu:9 ?f:9:1?ag:9 ?q:9:1?mas:9 ?i:9:1?mi:9
+if WarehouseQty!=0 research sp:10
+goto ResearchEnd
+
+label City3b				//Techs relying on WorkShop
+echo "This is City 2"
+research lu:2
+research lu:3,mas:2,mi:3,mt:1,ag:3
+rsrch="research "+CB[0]+":4,in:3,ir:1"
+execute rsrch
+rsrch="research "+CB[0]+":5,in:5,lo:1"
+execute rsrch
+rsrch="research "+CB[0]+":6,ho:1,in:6"
+execute rsrch
+rsrch="research "+CB[0]+":7,met:6,in:7,com:5"
+execute rsrch
+research met:9,in:9,mt:5
+research met:9,in:10
+research mt:10,lo:10,com:10,med:10	//L10 NPC Farming Techs
+research en:10,mac:10,ir:10		//Defensive Techs
+research ?ws:10?met:10 ?st:10?ho:10 ?fo:10?ms:10
+research ?s:10:1?lu:10 ?f:10:1?ag:10 ?q:10:1?mas:10 ?i:10:1?mi:10 ?a:10?pr:10 ?s:9:1?lu:9 ?f:9:1?ag:9 ?q:9:1?mas:9 ?i:9:1?mi:9
+if WarehouseQty!=0 research sp:10
+goto ResearchEnd
+
+label City3c				//Techs relying on Forge & Stable
+echo "This is City 3"
+research in:3,ir:1
+research in:5,lo:1
+research ho:1,in:6
+research in:7,com:5,ho:4
+research ms:9,mt:7,lo:5,ir:5
+research ms:10,con:10
+research mt:10,lo:10,com:10,med:10	//L10 NPC Farming Techs
+research en:10,mac:10,ir:10		//Defensive Techs
+research ?ws:10?met:10 ?st:10?ho:10 ?fo:10?ms:10
+research ?s:10:1?lu:10 ?f:10:1?ag:10 ?q:10:1?mas:10 ?i:10:1?mi:10 ?a:10?pr:10 ?s:9:1?lu:9 ?f:9:1?ag:9 ?q:9:1?mas:9 ?i:9:1?mi:9
+if WarehouseQty!=0 research sp:10
+goto ResearchEnd
+
+label Citys4				//Research Goals for a three city account
+echo "This is a "+m_context.cities.length+" City Account"
+ifgoto ThisCity = "2" City4b
+ifgoto ThisCity = "3" City4c
+ifgoto ThisCity = "4" City4d
+ifgoto ThisCity = "5" City4d
+ifgoto ThisCity = "6" City4d
+ifgoto ThisCity = "7" City4d
+ifgoto ThisCity = "8" City4d
+ifgoto ThisCity = "9" City4d
+ifgoto ThisCity = "10" City4d
+label City4a				//Get to Arch 10 ASAP
+echo "This is City 1"
+research ag:1
+research ag:2,ms:1
+research ag:3,lu:3,mas:2,mi:3,mt:1
+research met:1
+research ar:1
+research con:5
+research ar:8
+research ho:9
+research mt:10,lo:10,com:10,med:10	//L10 NPC Farming Techs
+research en:10,mac:10,ir:10		//Defensive Techs
+research ?ws:10?met:10 ?st:10?ho:10 ?fo:10?ms:10
+research ?s:10:1?lu:10 ?f:10:1?ag:10 ?q:10:1?mas:10 ?i:10:1?mi:10 ?a:10?pr:10 ?s:9:1?lu:9 ?f:9:1?ag:9 ?q:9:1?mas:9 ?i:9:1?mi:9
+if WarehouseQty!=0 research sp:10
+goto ResearchEnd
+
+label City4b				//Techs relying on WorkShop
+echo "This is City 2"
+research lu:2
+research lu:3,mas:2,mi:3,mt:1,ag:3
+rsrch="research "+CB[0]+":4,in:3,ir:1"
+execute rsrch
+rsrch="research "+CB[0]+":5,in:5,lo:1"
+execute rsrch
+rsrch="research "+CB[0]+":6,ho:1,in:6"
+execute rsrch
+rsrch="research "+CB[0]+":7,met:6,in:7,com:5"
+execute rsrch
+research met:9,in:9,mt:5
+research met:9,in:10
+research mt:10,lo:10,com:10,med:10	//L10 NPC Farming Techs
+research en:10,mac:10,ir:10		//Defensive Techs
+research ?ws:10?met:10 ?st:10?ho:10 ?fo:10?ms:10
+research ?s:10:1?lu:10 ?f:10:1?ag:10 ?q:10:1?mas:10 ?i:10:1?mi:10 ?a:10?pr:10 ?s:9:1?lu:9 ?f:9:1?ag:9 ?q:9:1?mas:9 ?i:9:1?mi:9
+if WarehouseQty!=0 research sp:10
+goto ResearchEnd
+
+label City4c				//Techs relying on Forge & Stable
+echo "This is City 3"
+research in:3,ir:1
+research in:5,lo:1
+research ho:1,in:6
+research in:7,com:5,ho:4
+research ms:9,mt:7,lo:5,ir:5
+research ms:10
+research mt:10,lo:10,com:10,med:10	//L10 NPC Farming Techs
+research en:10,mac:10,ir:10		//Defensive Techs
+research ?ws:10?met:10 ?st:10?ho:10 ?fo:10?ms:10
+research ?s:10:1?lu:10 ?f:10:1?ag:10 ?q:10:1?mas:10 ?i:10:1?mi:10 ?a:10?pr:10 ?s:9:1?lu:9 ?f:9:1?ag:9 ?q:9:1?mas:9 ?i:9:1?mi:9
+if WarehouseQty!=0 research sp:10
+goto ResearchEnd
+
+label City4d				//Techs relying on Forge & Stable
+echo "This is City "+ThisCity
+research con:10
+research mt:10,lo:10,com:10,ir:10,in:10
+research mac:10,en:10	//L10 NPC Farming Techs
+research ?ws:10?met:10 ?st:10?ho:10 ?fo:10?ms:10
+research ?s:10:1?lu:10 ?f:10:1?ag:10 ?q:10:1?mas:10 ?i:10:1?mi:10 ?a:10?pr:10 ?s:9:1?lu:9 ?f:9:1?ag:9 ?q:9:1?mas:9 ?i:9:1?mi:9
+if WarehouseQty!=0 research sp:10
+goto ResearchEnd
+
+label ResearchEnd
+return
+
+label builds
+echo "Set Goals - Builds"
+if date() - player.playerInfo.createrTime > 604800000 build be:9
+if date() - player.playerInfo.createrTime > 604800000 if BuildEmbassy = "Yes" build e:5
+if (city.fortification.abatis>400)build w:3
+if (city.fortification.arrowTower>900) build w:4
+if (city.fortification.arrowTower>2000) build w:5
+if (city.fortification.arrowTower>1900) build w:6
+if (city.fortification.arrowTower>3900) build w:7
+if (city.fortification.arrowTower>6233) build w:8
+if (city.fortification.arrowTower>8900) build w:9
+
+//Builds - Stage Selection
+if city.name.substr(1,3)="L10" goto BuildNPC10
+if city.name.substr(2,3)="L10" goto BuildNPC10
+if city.countBuilding(4, 10, 10)=1 if city.countBuilding(5, 10, 10)=1 if city.countBuilding(6, 10, 10)=1 if city.countBuilding(7, 10, 10)=37 goto BuildNPC10
+if city.getBuildingLevel(32)>=10 if city.getBuildingLevel(31)>=9 if city.countBuilding(2, 9, 9)>=CB[4]+2 if city.getBuildingLevel(30)>=9 if city.getBuildingLevel(27)>=10 if city.getBuildingLevel(29)>=10 if city.getBuildingLevel(25)>=9 if city.getBuildingLevel(23)>=9 if city.getBuildingLevel(24)>=10 if city.countBuilding(3, 9, 10)>=WarehouseQty goto Builds5
+if ThisCity="1" if city.getBuildingLevel(31)>=10 if city.countBuilding(2, 9, 9)>=CB[4] if city.getBuildingLevel(30)>=9 if city.getBuildingLevel(27)>=10 if city.getBuildingLevel(29)>=10 if city.getBuildingLevel(25)>=9 if city.getBuildingLevel(23)>=9 if city.countBuilding(3, 9, 10)>=WarehouseQty goto Builds4
+if ThisCity!="1" if city.getBuildingLevel(31)>=9 if city.countBuilding(2, 9, 9)>=CB[4] if city.getBuildingLevel(30)>=9 if city.getBuildingLevel(27)>=10 if city.getBuildingLevel(29)>=10 if city.getBuildingLevel(25)>=9 if city.getBuildingLevel(23)>=9 if city.countBuilding(3, 9, 10)>=WarehouseQty goto Builds4
+if ThisCity="1" if city.getBuildingLevel(31)>=10 if city.countBuilding(2, 9, 9)>=CB[4] if city.getBuildingLevel(30)>=9 if city.getBuildingLevel(27)>=9 if city.getBuildingLevel(29)>=9 if city.getBuildingLevel(25)>=9 if city.getBuildingLevel(23)>=9 if city.countBuilding(3, 9, 10)>=WarehouseQty goto Builds3
+if ThisCity!="1" if city.getBuildingLevel(31)>=9 if city.countBuilding(2, 9, 9)>=CB[4] if city.getBuildingLevel(30)>=9 if city.getBuildingLevel(27)>=9 if city.getBuildingLevel(29)>=9 if city.getBuildingLevel(25)>=9 if city.getBuildingLevel(23)>=9 if city.countBuilding(3, 9, 10)>=WarehouseQty goto Builds3
+if city.getBuildingLevel(31)>=9 if city.countBuilding(2, 9, 9)>=6 if city.getBuildingLevel(30)>=8 if city.getBuildingLevel(27)>=9 if city.getBuildingLevel(29)>=9 if city.getBuildingLevel(25)>=5 if city.getBuildingLevel(23)>=3 if city.getBuildingLevel(24)>=4 if city.countBuilding(3, 5, 10)>=WarehouseQty goto Builds2
+
+// Builds - Stage 1 - Common city build to 6 L9 Racks
+label Builds1
+bldstg="BldStg1"
+echo "Builds Stage 1"
+bld = "build c:0:"+CB[1]+",b:0:"+CB[2]+",wh:0:"+WarehouseQty+","+CB[11]+":0:"+(city.getBuildingLevel(31)*3+7)+","+CB[12]+":0:1,"+CB[13]+":0:1,"+CB[14]+":0:1"
+execute bld
+if BuildEmbassy = "No" build e:0
+bld = "build c:2:"+CB[1]
+execute bld
+bld = "build "+CB[11]+":3:"+(city.getBuildingLevel(31)*3+7)+","+CB[12]+":3:1,"+CB[13]+":3:1,"+CB[14]+":3:1"
+if (city.getAvailableTroop().ballista<600) execute bld
+bld = "build m:3,c:3:" + CB[1]
+execute bld
+bld = "build "+CB[11]+":5:"+(city.getBuildingLevel(31)*3+7)+","+CB[12]+":5:1,"+CB[13]+":5:1,"+CB[14]+":5:1"
+if (city.getAvailableTroop().ballista<600) execute bld
+bld = "build fo:4,b:4:1,c:4:"+CB[1]
+execute bld
+build a:4,r:4,fh:4,fo:5,be:4
+build b:3:3
+build b:4:2
+build a:5
+bld = "build "+CB[11]+":6:"+(city.getBuildingLevel(31)*3+7)+","+CB[12]+":6:1,"+CB[13]+":6:1,"+CB[14]+":6:1"
+if (city.getAvailableTroop().ballista<600) execute bld
+bld = "build be:5,c:5:"+CB[1]
+execute bld
+bld = "build "+CB[11]+":7:"+(city.getBuildingLevel(31)*3+7)+","+CB[12]+":7:1,"+CB[13]+":7:1,"+CB[14]+":7:1"
+if (city.getAvailableTroop().ballista<600) execute bld
+bld = "build "+CB[11]+":8:"+(city.getBuildingLevel(31)*3+7)+","+CB[12]+":8:1,"+CB[13]+":8:1,"+CB[14]+":8:1"
+if (city.getAvailableTroop().ballista<600) execute bld
+build b:3:6
+build b:4:5
+build b:5:3
+build b:6:2
+build b:9:1
+build be:6,rs:3
+build b:3:7
+build b:4:6
+build b:5:4
+build b:6:3
+build b:9:2
+build fh:6,r:6,rs:4
+build b:3:8
+build b:4:7
+build b:5:5
+build b:6:4
+build b:9:3
+build fh:9,r:9
+bld = "build b:4:"+CB[2]
+execute bld
+if WarehouseQty!=0 bld="build wh:5:"+WarehouseQty
+if WarehouseQty!=0 execute bld
+build b:3:9
+build b:4:8
+build b:5:6
+build b:6:5
+build b:9:4
+build be:7
+build b:3:10
+build b:4:9
+build b:5:7
+build b:6:6
+build b:9:5
+build be:8
+build b:3:11
+build b:4:10
+build b:5:8
+build b:6:7
+build b:9:6
+bld = "build c:9:"+CB[3]
+execute bld
+build t:9
+if ThisCity=1 if m_context.ItemCount("consume.blueprint.1")>=1 build t:10
+return
+
+//Builds - Stage 2 - Townhall, Cotts and Resources, plus level Releif Station as possible
+label Builds2
+bldstg="BldStg2"
+echo "Builds Stage 2"
+if ThisCity="1" echo "Upgrading Townhall first for promotion"
+if ThisCity="1" build t:10
+bld = "build c:0:"+CB[3]+",b:0:"+CB[4]+",wh:0:"+WarehouseQty+","+CB[11]+":0:"+(city.getBuildingLevel(31)*3+7)+","+CB[12]+":0:1,"+CB[13]+":0:1,"+CB[14]+":0:1"
+execute bld
+if BuildEmbassy = "No" build e:0
+bld = "build b:4:"+CB[4]
+execute bld
+bld = "build c:9:"+CB[3]
+execute bld
+build t:9
+bld = "build "+CB[11]+":9:"+(city.getBuildingLevel(31)*3+7)+","+CB[12]+":9:1,"+CB[13]+":9:1,"+CB[14]+":9:1"
+execute bld
+build be:9
+build a:9
+if city.researches[13].level<10 bld = "build rs:"+city.researches[13].level
+if city.researches[13].level=10 bld = "build rs:9"
+execute bld
+if WarehouseQty!=0 bld="build wh:9:"+WarehouseQty
+if WarehouseQty!=0 execute bld
+bld = "build b:9:"+CB[4]
+execute bld
+if BuildEmbassy = "Yes" build e:9
+build m:9
+return
+
+//Builds - Stage 3 - Level up L10 buildings as scripts are available
+label Builds3
+bldstg="BldStg3"
+echo "Builds Stage 3"
+bld = "build c:0:"+CB[3]+",b:0:"+CB[4]+",wh:0:"+WarehouseQty+","+CB[11]+":0:"+(city.getBuildingLevel(31)*3+7)+","+CB[12]+":0:1,"+CB[13]+":0:1,"+CB[14]+":0:1"
+execute bld
+if BuildEmbassy = "No" build e:0
+if city.researches[13].level<10 bld = "build rs:"+city.researches[13].level
+if city.researches[13].level=10 bld = "build rs:9"
+bld = "build b:9:"+CB[4]
+execute bld
+bld="build "+CB[11]+":9:"+(city.getBuildingLevel(31)*3+7)+","+CB[12]+":9:1,"+CB[13]+":9:1,"+CB[14]+":9:1"
+execute bld
+build fh:10
+build r:10
+return
+
+//Builds - Stage 4 - Complete L10 Buildings with prerequisite buildings
+label Builds4
+bldstg="BldStg4"
+echo "Builds Stage 4"
+UpdateCB=CB.splice(4,1,CB[4]+2)
+bld = "build c:0:"+CB[3]+",b:0:"+CB[4]+",wh:0:"+WarehouseQty+","+CB[11]+":0:"+(city.getBuildingLevel(31)*3+7)
+execute bld
+if BuildEmbassy = "No" build e:0
+bld = "build b:9:"+CB[4]
+execute bld
+build inn:0:0
+if ThisCity!=2 build ?ws:1?fo:0:0
+build w:10
+if ThisCity=2 if city.researches[5].level<10 build ws:10
+if ThisCity=2 if city.researches[5].level=10 build ws:0:0,fo:0:0
+if ThisCity!=2 build ws:0:0
+build rs:10
+return
+
+//Builds - Stage 5 - Finish L10 Buildings
+label Builds5
+bldstg="BldStg5"
+echo "Builds Stage 5"
+UpdateCB=CB.splice(4,1,CB[4]+4)
+bld = "build c:0:"+CB[3]+",b:0:"+CB[4]+",wh:0:"+WarehouseQty
+execute bld
+if BuildEmbassy = "No" build e:0
+bld = "build b:9:"+CB[4]
+execute bld
+build st:0:0
+bld="build "+CB[11]+":9:40,"+CB[12]+":0:0,"+CB[13]+":0:0,"+CB[14]+":0:0"
+execute bld
+build t:10
+build be:10
+build a:10
+if BuildEmbassy = "Yes" build e:10
+build m:10
+if WarehouseQty!=0 bld="build wh:+WarehouseQty+":10
+if WarehouseQty!=0 execute bld
+build c:10:5
+bld = "build b:10:"+CB[4]
+execute bld
+bld="build "+CB[11]+":10:40,"+CB[12]+":0:0,"+CB[13]+":0:0,"+CB[14]+":0:0"
+execute bld
+return
+
+// Rebuild L10 NPC
+label BuildNPC10
+bldstg="BldStgL10"
+echo "Rebuild L10 NPC"
+UpdateCB=CB.splice(2,1,CB[4]+4)
+bld="build b:0:"+(25-CB[6]-WarehouseQty)
+execute bld
+build inn:2:0
+bld="build b:4:"+(25-CB[6]-WarehouseQty)
+execute bld
+bld="build c:0:"+CB[6]
+execute bld
+build ?ms:10?fo:0 ?ho:10?st:0 ?met:10?ws:0
+if BuildEmbassy = "No" build e:0
+bld="build c:9:"+CB[6]+",b:9:"+(25-CB[6]-WarehouseQty)
+execute bld
+build inn:0
+bld="build "+CB[11]+":9:40"
+execute bld
+bld="build ?"+CB[19]+":10?"+CB[12]+":0:0 ?"+CB[20]+":10?"+CB[13]+":0:0 ?"+CB[21]+":10?"+CB[14]+":0:0"
+execute bld
+bld="build b:10:"+(25-CB[6]-WarehouseQty)
+execute bld
+bld="build "+CB[11]+":10:40"
+execute bld
+return

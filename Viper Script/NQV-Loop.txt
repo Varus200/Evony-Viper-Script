@@ -1,0 +1,17 @@
+if NEATO="Yes" call "NQV-NEATOMarketUpdate.txt"
+if AlertEmail="Yes" call "NQV-Alerts.txt"
+if AccntState="Peace" if LevelHeroesEnable = "Yes" if m_city.IsHeroInCastle(LvlHero) if city.findHeroByName(LvlHero).status<2 call "NQV-LevelHeroes.txt"
+if NEATO!="Yes"  sleep 20
+if AlertEmail!="Yes"  sleep 20
+if LevelHeroesEnable!="Yes" sleep 20
+if city.resource.gold<100 levy gold
+if city.tradesArray.length =city.getBuildingLevel(23) execute "canceltrade " + city.tradesArray[0].id
+qty = 99999999
+if qty>floor((city.resource.wood.amount)-(R[2]*TMaxF)) if city.resource.wood.amount>R[2]*TEmrgF qty = floor((city.resource.wood.amount)-(R[2]*TMaxF))
+if city.resource.wood.amount>R[2]*TEmrgF execute "sell wood " + qty
+qty = 99999999
+if qty>floor((city.resource.stone.amount)-(R[3]*TMaxF)) if city.resource.stone.amount>R[3]*TEmrgF qty = floor((city.resource.stone.amount)-(R[3]*TMaxF))
+if city.resource.stone.amount>R[3]*TEmrgF execute "sell stone " + qty
+qty = 99999999
+if qty>floor((city.resource.iron.amount)-(R[4]*TMaxF)) if city.resource.iron.amount>R[4]*TEmrgF qty = floor((city.resource.iron.amount)-(R[4]*TMaxF))
+if city.resource.iron.amount>R[4]*TEmrgF execute "sell iron " + qty

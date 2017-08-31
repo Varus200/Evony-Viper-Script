@@ -1,0 +1,113 @@
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+//				Nothing to change in this script
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+//CB = ["lu",6,15,1,19,1,1]
+//ScriptStage="Builds"
+
+echo "Build Additional Buildings"
+if ScriptStage!="Builds" if city.countBuilding(1, 1)<CB[1] gosub BuildCotts
+if ScriptStage!="Builds" return
+if city.getBuildingLevel(4)>="5" if city.countBuilding(2, 1)<CB[2] gosub BuildBarracks
+if WarehouseQty>1 if city.getBuildingLevel(4)>="5" if city.countBuilding(3, 1)<WarehouseQty gosub BuildWarehouses
+if city.researches[13].level >= "1" if city.getBuildingLevel(24)=0 gosub BuildRelief
+return
+
+label BuildCotts
+echo "Building additional Cottages"
+if city.getActiveBuilding(false) echo "Waiting for current building to complete"
+if city.getActiveBuilding(false) sleep 60
+if city.getActiveBuilding(false) repeat
+CLoc=19
+Label NextCott
+if CB[1]-1>=city.countBuilding(1, 1, 10) if (CLoc-14)=city.countBuilding(1, 1, 10) gosub BuildThisCottage
+if CB[1]-1=(CLoc-14) return
+CLoc=CLoc+1
+Goto NextCott
+label BuildThisCottage
+W=[0,100,500,100,50]
+gosub WaitMarket
+execute "create house "+CLoc
+return
+
+label BuildBarracks
+if city.getActiveBuilding(false) echo "Waiting for current building to complete"
+if city.getActiveBuilding(false) sleep 60
+if city.getActiveBuilding(false) repeat
+echo "Building additional Barracks"
+if BuildEmbassy = "No" RLoc=2
+ifgoto BuildEmbassy = "No" BuildThisRack
+RCount=1
+if WarehouseQty<2 RLoc=12+WarehouseQty
+if WarehouseQty>=2 RLoc=33-WarehouseQty
+Label NextRack
+if CB[2]>=city.countBuilding(2, 1, 10) if RCount=city.countBuilding(2, 1, 10) gosub BuildThisRack
+if CB[2]=city.countBuilding(2, 1, 10) return
+if RLoc>14 RLoc=RLoc-1
+if RLoc=13 RLoc=31
+if RLoc<13 RLoc=13
+if RLoc=18 return
+RCount=RCount+1
+Goto NextRack
+label BuildThisRack
+W=[0,250,1200,1500,500]
+gosub WaitMarket
+execute "create barrack "+RLoc
+return
+
+label BuildWarehouses
+if city.getActiveBuilding(false) echo "Waiting for current building to complete"
+if city.getActiveBuilding(false) sleep 60
+if city.getActiveBuilding(false) repeat
+echo "Building Additional Warehouses"
+WHCount=1
+WHLoc=13
+Label NextWH
+if WarehouseQty>=city.countBuilding(3, 1, 10) if WHCount=city.countBuilding(3, 1, 10) gosub BuildThisWH
+if WarehouseQty=city.countBuilding(3, 1, 10) return
+if WHLoc>14 WHLoc=RLoc-1
+if WHLoc=13 WHLoc=31
+if WHLoc<13 WHLoc=13
+if WHLoc=18 return
+WHCount=WHCount+1
+Goto NextWH
+label BuildThisWH
+W=[0,100,1500,1000,300]
+gosub WaitMarket
+execute "create warehouse "+WHLoc
+return
+
+label BuildRelief
+W=[0,1500,5000,4500,500]
+goto WaitMarket
+create relief 9
+return
+
+label WaitMarket
+// ifgosub NEATO="Yes" UpdateNEATO
+if (city.resource.gold>W[0]) if (city.resource.food.amount>W[1]) if(city.resource.wood.amount>W[2]) if(city.resource.stone.amount>W[3]) if(city.resource.iron.amount>W[4]) return
+SR=100000
+CR=round((city.incomingResources(3000).gold+city.resource.gold)+(BuyPrice(0)*(city.incomingResources(3000).food+city.resource.food.amount))+(BuyPrice(1)*(city.incomingResources(3000).wood+city.resource.wood.amount))+(BuyPrice(2)*(city.incomingResources(3000).stone+city.resource.stone.amount))+(BuyPrice(3)*(city.incomingResources(3000).iron+city.resource.iron.amount)))
+if CR>SR TV=[20000,20000,20000,20000,20000]
+if CR<SR TV=W
+TMinF=1
+TMaxF=3
+tradegold="tradepolicy /type:gold /min:" + TV[0]
+tradefood="tradepolicy /type:food /min:" + TV[1]*TMinF + " /max:" + TV[1]*TMaxF
+tradewood="tradepolicy /type:wood /min:" + TV[2]*TMinF + " /max:" + TV[2]*TMaxF + " /allowselltomin"
+tradestone="tradepolicy /type:stone /min:" + TV[3]*TMinF + " /max:" + TV[3]*TMaxF
+tradeiron="tradepolicy /type:iron /min:" + TV[4]*TMinF + " /max:" + TV[4]*TMaxF
+config trade:0
+execute tradegold
+execute tradefood
+execute tradewood
+execute tradestone
+execute tradeiron
+config trade:1
+label WaitForRes
+if (city.resource.gold>W[0]) if (city.resource.food.amount>W[1]) if(city.resource.wood.amount>W[2]) if(city.resource.stone.amount>W[3]) if(city.resource.iron.amount>W[4]) return
+sleep 120
+loop WaitForRes
+
+
+
+

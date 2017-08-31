@@ -1,0 +1,70 @@
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+//				Nothing to change in this script
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+echo "Script-NQV-Alerts"
+ifgoto ScriptStage="Initialise" AlertInitialise
+
+label Alerting
+ifgosub city.hasEnemyArmies AlertIncoming
+ifgosub AlertNeighboursEnable="Yes" AlertNeighbours
+if AlertAllianceMembers="Yes" if AlertAllianceMembersLord=player.playerInfo.userName gosub AlertAllianceMembers
+return
+label AlertNeighbours
+AlertNeighboursCountCur=0
+AN=0
+AlertNeighboursBodyCur= ""
+execute "scanrec "+(city.x-AlertNeighboursDistance)+","+(city.y-AlertNeighboursDistance)+" "+(city.x+AlertNeighboursDistance)+","+(city.y+AlertNeighboursDistance)
+castles = AllCastles(GetFieldId(city.x - AlertNeighboursDistance, city.y - AlertNeighboursDistance), GetFieldId(city.x + AlertNeighboursDistance, city.y + AlertNeighboursDistance))
+label AlertNeighboursNext
+if castles[AN].relation = 2 if castles[AN].state = 1 gosub AlertNeighboursFoundCastle
+if castles[AN].relation = 3 if castles[AN].state = 1 gosub AlertNeighboursFoundCastle
+AN = AN + 1
+if AN < castles.length gosub AlertNeighboursNext
+if AlertNeighboursCountPrev!=AlertNeighboursCountCur if ANLoop>0 gosub AlertNeighboursChange
+AlertNeighboursCountPrev = AlertNeighboursCountCur
+AlertNeighboursBodyPrev=AlertNeighboursBodyCur
+ANLoop=ANLoop+1
+return
+label AlertNeighboursFoundCastle
+AlertNeighboursCountCur=AlertNeighboursCountCur+1
+AlertNeighboursBodyCur = AlertNeighboursBodyCur+["Green","Blue","Grey","Red"][castles[AN].relation]+" Castle "+castles[AN].name+" of Lord "+castles[AN].userName+" in Alliance "+castles[AN].allianceName+" at "+FieldIdToCoords(castles[AN].id)+" status:"+["Null","Peace","Truce","Beginner","Holiday","Dream Truce"][castles[AN].state]+"<br/>"
+return
+label AlertAllianceMembers
+gosub AlertAllianceMembersCheck
+if AlertAllianceMembersCountPrev != AlertAllianceMembersCountCur goto AlertAllianceMembersChange
+return
+label AlertAllianceMembersCheck
+command "members"
+AlertAllianceMembersCountCur=$result.split("\n").length-1
+return
+label AlertIncoming
+ic=city.enemyArmies.length-1
+AlertIncomingBody=""
+label IncomingAlertLoop
+AlertIncomingBody="<br/>Wave "+(ic+1)+", ArrivalTime:"+date(city.enemyArmies[ic].reachTime).getHours()+":"+date(city.enemyArmies[ic].reachTime).getMinutes()+":"+date(city.enemyArmies[ic].reachTime).getSeconds()+", Lord:"+city.enemyArmies[ic].king+", Alliance:"+city.enemyArmies[ic].alliance+", Castle:"+city.enemyArmies[ic].startPosName+", Coords:"+city.enemyArmies[ic].startCoords+", hero:"+city.enemyArmies[ic].hero+", lvl:"+city.enemyArmies[ic].heroLevel+"<br/Troops wo:"+city.enemyArmies[ic].troop.peasants+",w:"+city.enemyArmies[ic].troop.militia+",s:"+city.enemyArmies[ic].troop.scouter+",p:"+city.enemyArmies[ic].troop.pikemen+",sw:"+city.enemyArmies[ic].troop.swordsmen+",a:"+city.enemyArmies[ic].troop.archer+",c:"+city.enemyArmies[ic].troop.lightCavalry+",cata:"+city.enemyArmies[ic].troop.heavyCavalry+",t:"+city.enemyArmies[ic].troop.carriage+",b:"+city.enemyArmies[ic].troop.ballista+",r:"+city.enemyArmies[ic].troop.batteringRam+",cp:"+city.enemyArmies[ic].troop.catapult+", SentTime:"+date(city.enemyArmies[ic].startTime).getHours()+":"+date(city.enemyArmies[ic].startTime).getMinutes()+":"+date(city.enemyArmies[ic].startTime).getSeconds()+AlertIncomingBody
+ic=ic-1
+ifgoto ic>=0 IncomingAlertLoop
+AlertMessageSubject = "The city "+city.name+" of Lord "+player.playerInfo.userName+" is under attack"
+AlertMessageBody="Your City<br/>City Loyalty:"+city.resource.support+"<br/>City Grievance:"+city.resource.complaint+"<br/><br/>Incoming Army Summary<br/>"+AlertIncomingBody
+goto AlertSendEmail
+label AlertNeighboursChange
+if AlertNeighboursCountPrev<AlertNeighboursCountCur AlertMessageSubject = "The city "+city.name+ " has new neighbours"
+if AlertNeighboursCountPrev>AlertNeighboursCountCur AlertMessageSubject = "The city "+city.name+ " has neighbours that have left"
+AlertMessageBody="Neighbour Summary<br/>Current Neighbours<br/>"+AlertNeighboursBodyCur+<br/><br/>Previous Neighbours<br/>"+AlertNeighboursBodyPrev
+goto AlertSendEmail
+label AlertAllianceMembersChange
+AlertMessageSubject = "Alliance Members has changed"
+AlertMessageBody="Member count change detected: was "+AlertAllianceMembersCountPrev+" members, now "+AlertAllianceMembersCountCur+" members"
+goto AlertSendEmail
+label AlertSendEmail
+data = {neatokey:Config.neatokey,send2mail:AlertEmailRecipientEmail,send2name:AlertEmailRecipientName,subject:AlertMessageSubject,body:AlertMessageBody}
+url = "http://" + NEATOServer + ":82/NEATOmail.php"
+post url data
+echo $result // (optional)
+return
+
+label AlertInitialise
+if AlertAllianceMembers="Yes" gosub AlertAllianceMembersCheck
+if AlertAllianceMembers="Yes" AlertAllianceMembersCountPrev = AlertAllianceMembersCountCur
+gosub Alerting
+return

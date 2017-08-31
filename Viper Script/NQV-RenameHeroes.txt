@@ -1,0 +1,99 @@
+label RenameHeroes
+echo "Rename heroes to standard names"
+config fasthero:0
+releasehero any
+echo "Waiting for recalled heroes to return"
+label RenameHeroesCheckArmies
+rhhid=0
+rhih=0
+label RenameHeroesNextHero
+if city.heroes[rhhid].isAvailable rhih=rhih+1
+if rhih>=city.heroes.length goto RenameHeroesSkip
+rhhid=rhhid+1
+if rhhid>=city.heroes.length goto RenameHeroesCheckArmies
+if city.selfArmies.length != "0" if AlertEmail = "Yes" call "NQV-Alerts.txt"
+goto RenameHeroesNextHero
+label RenameHeroesSkip
+numHeroes = city.heroes.length
+label RenameTemp
+ifgoto (numHeroes = 0) RenameHeroesNow
+numHeroes = numHeroes - 1
+if (city.heroes[numHeroes].isPoliticsHero) newname = "Pol" + abs(city.heroes[numHeroes].base)+"P"+city.heroes[numHeroes].management
+if (city.heroes[numHeroes].isIntelHero) newname = "Int" + abs(city.heroes[numHeroes].base)+"I"+city.heroes[numHeroes].stratagem
+if (city.heroes[numHeroes].isAttackHero) newname = "Att" + abs(city.heroes[numHeroes].base)+"A"+city.heroes[numHeroes].power
+if (city.heroes[numHeroes].isAttackHero) if (city.heroes[numHeroes].base < H[7]) newname = "Junk" + abs(city.heroes[numHeroes].base)
+execute "renamehero " + city.heroes[numHeroes].name + " " + newname
+loop RenameTemp
+label RenameHeroesNow
+command "listallheroes"
+execute "heroes = [ " + $result.replace(/^(".*?"),"(.*?)","(.*?)","(.*?)","(.*?)","(.*?)","(.*?)","(.*?)","(.*?)",(".*?").*?$/gm, "\{name:$1, lvl:$2, pts:$3, pol:$4, att:$5, int:$6, exp:$7, nextLvl:$8, loyalty:$9, city:$10, polbase:($4-$2+$3)+($2/HeroRenameLvlFactor), attbase:($5-$2+$3)+($2/HeroRenameLvlFactor),intbase:($6-$2+$3)+($2/HeroRenameLvlFactor) \}").split("\n").splice(1).join(",\n") + " ]"
+bestattack = heroes.sortOn(["attbase","lvl"], 18)[0]
+echo "Highest attack base hero is " + bestattack.name + ", in city " + bestattack.city
+if bestattack.city=city.name execute "renamehero "+bestattack.name+" "+H[0]
+label PolHeroes
+hr = 0
+PHero=1
+config nomayor:1
+setMayor remove
+label NextPol
+ThisHero=heroes.sortOn(["polbase","lvl"], 18)[hr]
+echo "Next Pol Hero " + ThisHero.name+", Base:" + ThisHero.polbase+", in city:"+ThisHero.city
+ifgoto ThisHero.name=bestattack.name PHEnd
+ifgoto ThisHero.city!=city.name PHEnd
+if ThisHero.pol>ThisHero.int if ThisHero.pol>ThisHero.att if PHero<3 goto FoundPol
+label PHEnd
+hr=hr+1
+if hr=heroes.length goto IntHeroes
+goto NextPol
+label FoundPol
+echo "Found Polhero "+PHero+", "+ThisHero.name
+if PHero=1 execute "renamehero "+ThisHero.name+" "+H[1]
+if PHero=2 execute "renamehero "+ThisHero.name+" "+H[2]
+PHero=PHero+1
+if PHero=3 goto IntHeroes
+goto PHEnd
+label IntHeroes
+config nomayor:0
+hr = 0
+IHero=1
+label NextInt
+ThisHero=heroes.sortOn(["intbase","lvl"], 18)[hr]
+echo "Next Int Hero " + ThisHero.name+", Base:" + ThisHero.intbase+", in city:"+ThisHero.city
+ifgoto ThisHero.name=bestattack.name IHEnd
+ifgoto ThisHero.city!=city.name IHEnd
+if ThisHero.int>ThisHero.pol if ThisHero.int>ThisHero.att if IHero<2 goto FoundInt
+label IHEnd
+hr=hr+1
+if hr=heroes.length goto AttHeroes
+goto NextInt
+label FoundInt
+echo "Found Inthero "+IHero+", "+ThisHero.name
+if IHero=1 execute "renamehero "+ThisHero.name+" "+H[3]
+//if IHero=2 execute "renamehero "+ThisHero.name+" "+H[4]
+IHero=IHero+1
+if IHero=2 goto AttHeroes
+goto IHEnd
+label AttHeroes
+hr = 0
+AHero=1
+label NextAtt
+ThisHero=heroes.sortOn(["attbase","lvl"], 18)[hr]
+echo "Next Att Hero " + ThisHero.name+", Base:" + ThisHero.attbase+", in city:"+ThisHero.city
+ifgoto ThisHero.name=bestattack.name AHEnd
+ifgoto ThisHero.city!=city.name AHEnd
+if ThisHero.att>ThisHero.int if ThisHero.att>ThisHero.pol if AHero<3 goto FoundAtt
+label AHEnd
+hr=hr+1
+if hr=heroes.length goto FoundAll
+goto NextAtt
+label FoundAtt
+echo "Found Atthero "+AHero+", "+ThisHero.name
+if AHero=1 execute "renamehero "+ThisHero.name+" "+H[5]
+if AHero=2 execute "renamehero "+ThisHero.name+" "+H[6]
+AHero=AHero+1
+if AHero=3 goto FoundAll
+goto AHEnd
+label FoundAll
+config nomayor:0,wartown:0
+RenameHeroesActive = "No"
+return

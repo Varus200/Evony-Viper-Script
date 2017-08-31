@@ -1,0 +1,200 @@
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+//				Nothing to change in this script
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+echo "Build-Quests"
+bldstg="BldStgQu"
+ScriptStage="BuildQuests"
+echo "Finding the lucky Quest Mail Recipient"
+label BuildQuestInitialise
+execute "coord = \{x:" + (round(random()*790) + 5) + ", y:" + (round(random()*790) + 5) + "\}"
+execute "rescanrec " + (coord.x - 5) + "," + (coord.y - 5) + " " + (coord.x + 5) + "," + (coord.y + 5)
+command "listcastles " + (coord.x - 5) + "," + (coord.y - 5) + " " + (coord.x + 5) + "," + (coord.y + 5)
+MailLord=$result.match(/\d+\.\d+","[^"]+","([^"]+)/m)[1]
+if MailLord = null sleep 30
+if MailLord = null loop 2 BuildQuestInitialise
+call "NQV-Settings.txt"
+ChatMessage = CM[round(random()*CM.length-1)]
+LC=0
+LevCom = ["stone","gold","iron","lumber","food","relief","pray","bless","popraise"]
+LCLast=0
+if city.getBuildingLevel(27)=1 LC=1
+if city.getBuildingLevel(31)=2 LC=2
+if city.getBuildingLevel(5)=2 LC=3
+echo "Have you checked the settings, if not stop, make any alterations and start the script again"
+sleep 30
+
+echo "Starting Quests Based Build"				//City Build - Quests Based Build
+resetgoals
+if city.getActiveBuilding(false) echo "Waiting for current building to complete before recovering script, don't cancel building as this may affect required resources"
+if city.getActiveBuilding(false) sleep 60
+if city.getActiveBuilding(false) repeat
+if city.getBuildingLevel(25)=2 research mas:1,mi:2,mt:1,ag:1,lu:3
+if city.getBuildingLevel(7)>=5 goto QuestsBuildLoopCEnd
+if city.getBuildingLevel(32)>=1 research ag:2,lu:2,ms:1
+if city.getBuildingLevel(32)>=1 goto QuestsBuildLoopBEnd
+if city.getBuildingLevel(31)>=2 if city.getBuildingLevel(3)=0 goto QuestsBuildLoopAEnd
+call "NQV-Items.txt"
+completequests routine
+if m_context.ItemCount("player.box.present.2")>0 useitem Newbies_Package
+if city.countBuilding(1, 1, 10)=0  completequests routine
+if city.countBuilding(1, 1, 10)=0 create house 14
+if city.countBuilding(1, 1, 10)=1 if city.countBuilding(1, 2, 10)=0 upgrade house
+if city.getBuildingLevel(21)=0  create inn 7
+if city.countBuilding(7, 1, 10)=0 create farm 1001
+if city.countBuilding(4, 1, 10)=0 create saw 1004
+if city.countBuilding(5, 1, 10)=0 create quarry 1002
+if city.countBuilding(6, 1, 10)=0 create iron 1003
+if city.countBuilding(4, 1, 10)=1 if city.countBuilding(4, 2, 10)=0 completequests routine
+if city.countBuilding(4, 1, 10)=1 if city.countBuilding(4, 2, 10)=0 upgrade saw
+if city.countBuilding(1, 1, 10)=1 completequests routine
+if city.countBuilding(1, 1, 10)=1 repeat 4
+if city.countBuilding(1, 1, 10)=1 create house 15
+if city.countBuilding(1, 1, 10)=2 create house 16
+if city.countBuilding(1, 1, 10)=3 create house 17
+if city.countBuilding(1, 2, 10)=1 upgrade house
+if city.countBuilding(1, 2, 10)=2 upgrade house
+if city.countBuilding(29, 1, 10)=0 completequests routine
+if city.getBuildingLevel(29)=0   create rally 8
+if city.countBuilding(2, 1, 10)=0 completequests routine
+if city.countBuilding(2, 1, 10)=0 create barrack 11
+if LC<5 if LCLast+900000<date().getTime() gosub LevyComfort
+if city.getBuildingLevel(27)=0 completequests routine
+if city.getBuildingLevel(27)=0 repeat 3
+if city.getBuildingLevel(27)=0 create feasting 3
+if city.getBuildingLevel(23)=0 useitem amulet
+if city.getBuildingLevel(23)=0 production 100 100 100 100	//Complete Admin Quests
+if city.getBuildingLevel(23)=0 completequests routine
+if city.getBuildingLevel(23)=0 settaxrate 20
+if city.getBuildingLevel(23)=0 completequests routine
+if city.name!=LeftPad(ThisCity,2,0)+CityName execute "renamecity "+LeftPad(ThisCity,2,0)+CityName
+if city.getBuildingLevel(23)=0 completequests routine
+if city.getBuildingLevel(23)=0 sleep 5
+if city.getBuildingLevel(23)=0 execute "changeflag " + FlagName
+if city.getBuildingLevel(23)=0 completequests routine
+if city.getBuildingLevel(23)=0 findhero pol
+if city.getBuildingLevel(23)=0 completequests routine
+if city.getBuildingLevel(23)=0 setmayor pol
+if city.getBuildingLevel(23)=0 completequests routine
+if city.getBuildingLevel(23)=0 rewardheroes
+if city.getBuildingLevel(23)=0 execute "changeheroname " + city.heroes[0].name + " " + H[1]
+config hero:1
+if city.getBuildingLevel(23)=0 create market 4
+if city.getBuildingLevel(31)=1 if city.getBuildingLevel(3)=0 completequests routine
+if city.getBuildingLevel(31)=1 if city.getBuildingLevel(3)=0 create warehouse 12
+if city.getBuildingLevel(31)=1 if city.getBuildingLevel(3)=1 completequests routine
+if city.getBuildingLevel(31)=1 build t:2
+if WarehouseQty = 0 if city.getBuildingLevel(3)=1 build wh:0	//Townhouse L2
+if WarehouseQty = 0 if city.getBuildingLevel(31)>=2 if city.getBuildingLevel(3)=0 goto QuestsBuildLoopAEnd
+if WarehouseQty!= 0 if city.getBuildingLevel(31)>=2 goto QuestsBuildLoopAEnd
+Add0UN=20
+label QuestsBuildLoopA
+if NEATO="Yes" if Add0UN>=20 call "NQV-UpdateNEATO.txt"
+if city.getBuildingLevel(31)=1 if Add0UN>=20 call "NQV-Items.txt"
+if LC<5 if LCLast+900000<date().getTime() gosub LevyComfort
+if city.getBuildingLevel(31)=1 completequests routine
+if Add0UN>=20 Add0UN=0
+Add0UN=Add0UN+1
+if WarehouseQty = 0 if city.getBuildingLevel(31)>=2 if city.getBuildingLevel(3)=0 goto QuestsBuildLoopAEnd
+if WarehouseQty!= 0 if city.getBuildingLevel(31)>=2 goto QuestsBuildLoopAEnd
+sleep 60
+loop QuestsBuildLoopA
+label QuestsBuildLoopAEnd
+if city.getBuildingLevel(25)=0 echo "Complete Admin Quests"
+if city.getBuildingLevel(25)=0 completequests routine
+if city.getBuildingLevel(25)=0 command "mail " + MailLord + " " + MailSubject + " " + MailMessage
+if city.getBuildingLevel(25)=0 completequests routine
+if city.getBuildingLevel(25)=0 execute "worldchat " + ChatMessage
+if city.getBuildingLevel(25)=0 completequests routine
+if city.getBuildingLevel(25)=0 repeat 2
+if city.getBuildingLevel(25)=0 create academy 0
+research ag:1,lu:1
+if city.getBuildingLevel(28)=0 create embassy 2
+if city.getBuildingLevel(5)=1 echo "Time to start looking for an Alliance"
+if city.getBuildingLevel(5)=1 command "apply " + Alliance
+if LC<5 if LCLast+900000<date().getTime() gosub LevyComfort
+if city.getBuildingLevel(5)=1 completequests routine
+if city.getBuildingLevel(5)=1 upgrade quarry
+if city.getBuildingLevel(6)=1 upgrade iron
+if city.getBuildingLevel(6)=2 upgrade iron
+if city.getBuildingLevel(22)=0 create forge 1
+if city.getBuildingLevel(22)=1 upgrade forge
+if city.getBuildingLevel(26)=0 create workshop 10
+build s:2:1
+build f:2:1
+build w:1
+research ag:2,lu:2,ms:1
+Add0UN=20
+label QuestsBuildLoopB
+if NEATO="Yes" if Add0UN>=20 call "NQV-UpdateNEATO.txt"
+if Add0UN>=20 Add0UN=0
+Add0UN=Add0UN+1
+completequests routine
+if LC<5 if LCLast+900000<date().getTime() gosub LevyComfort
+if city.getBuildingLevel(32)>=1 goto QuestsBuildLoopBEnd
+sleep 60
+loop QuestsBuildLoopB
+label QuestsBuildLoopBEnd
+if city.getBuildingLevel(32)=0 completequests routine
+if city.getBuildingLevel(32)=0 create wall
+if city.getBuildingLevel(30)=0 walldefense tra 10
+if city.getBuildingLevel(30)=0 completequests routine
+if city.getBuildingLevel(30)=0 create beacon 5
+build be:3
+build t:3
+build w:2
+build a:2
+build f:5
+Add0UN=20
+label QuestsBuildLoopC
+if NEATO="Yes" if Add0UN>=20 call "NQV-UpdateNEATO.txt"
+if Add0UN>=20 call "NQV-Items.txt"
+if Add0UN>=20 Add0UN=0
+Add0UN=Add0UN+1
+completequests routine
+if city.fortification.trap=100 walldefense tra 100 demo
+if city.getBuildingLevel(31)>=3 if m_context.ItemCount("player.box.present.4")>=1 useitem Package_for_Lords
+if m_context.ItemCount("consume.refreshtavern.1")>=1 useitem hero hunting
+if LC<5 if LCLast+900000<date().getTime() gosub LevyComfort
+if city.getAvailableTroop().peasants>=250 disband wo:250
+if city.getBuildingLevel(25)=2 research mas:1,mi:2,mt:1,ag:1,lu:3
+if city.getBuildingLevel(7)>=5 goto QuestsBuildLoopCEnd
+sleep 60
+loop QuestsBuildLoopC
+label QuestsBuildLoopCEnd
+if city.getBuildingLevel(20)=0 create stable 6
+completequests routine
+if city.countBuilding(2, 1, 10)=1 if city.countBuilding(2, 2, 10)=0 upgrade barrack
+completequests routine
+if city.countBuilding(1, 1, 10)=4 create house 18
+call "NQV-AddBuild.txt"
+completequests routine
+repeat 2
+call "NQV-Items.txt"
+if NEATO="Yes" call "NQV-UpdateNEATO.txt"
+echo "Use a 1 Hour Speedup here, need to use one 1 Hour Speed up to Complete the Guidlines Quest and enable the "
+echo "Purchase Items Quests, Purchase 1 Amulet, Complete the Quest again, then you should be able to buy about"
+echo "5 more, Spin your amulets"
+build t:4					//Townhouse L4
+Add0UN=20
+label QuestsBuildLoopD
+if NEATO="Yes" if Add0UN>=20 call "NQV-UpdateNEATO.txt"
+if Add0UN>=20 call "NQV-Items.txt"
+if Add0UN>=20 Add0UN=0
+Add0UN=Add0UN+1
+completequests routine
+if LC<5 if LCLast+900000<date().getTime() gosub LevyComfort
+if city.getBuildingLevel(31)>=4 goto QuestsBuildLoopDEnd
+sleep 60
+loop QuestsBuildLoopD
+label QuestsBuildLoopDEnd
+completequests routine
+echo "First City build by Quests complete"
+ScriptStage="Builds"
+return
+
+label LevyComfort
+execute "levy "+LevCom[LC]
+if LC<4 execute "comfort "+LevCom[(LC+5)]
+LC=LC+1
+LCLast=date().getTime()
+return
